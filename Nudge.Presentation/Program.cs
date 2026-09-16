@@ -1,8 +1,11 @@
+using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Nudge.Application.Helpers;
 using Nudge.Application.Interfaces;
+using Nudge.Application.Models.Public.Creators.ResponseModel;
+using Nudge.Infrastructure.Persistence;
 using Nudge.Infrastructure.Repositories;
 using Nudge.Presentation.Middleware;
 using Scalar.AspNetCore;
@@ -27,6 +30,9 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IGene
 var connectionString = builder.Configuration
     .GetConnectionString("Nudge_DB")!;
 builder.Services.AddSingleton(new DbConnectionFactory(connectionString));
+
+// Dapper JSON column type handlers
+DapperTypeHandlers.Register();
 
 //controllers
 builder.Services.AddControllers();
@@ -96,14 +102,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
-
-// load permissions at startup
-using (var scope = app.Services.CreateScope())
-{
-    var permService = scope.ServiceProvider
-        .GetRequiredService<PermissionService>();
-    await permService.LoadAsync();
-}
 
 // Hydrate cache on application startup
 using (var startupScope = app.Services.CreateScope())

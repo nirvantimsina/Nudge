@@ -12,11 +12,12 @@ import { FeatureBento } from "@/src/components/public/sections/FeatureBento";
 import { PricingComparisonTable } from "@/src/components/public/sections/PricingComparisonTable";
 import { HowItWorksSteps } from "@/src/components/public/sections/HowItWorksSteps";
 import { PagodaWatermark } from "@/src/components/public/decorative/PagodaWatermark";
+import { ProductSuiteSection } from "../components/public/sections/ProductSuitSection";
 
 export default function HomePage() {
   return (
     <>
-      <NavBar logoUrl="/logo.png" />
+      <NavBar />
 
       <main className="flex-grow nepal-mandala-bg relative overflow-hidden">
         <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-surface-container-high/40 to-transparent pointer-events-none" />
@@ -31,11 +32,13 @@ export default function HomePage() {
                 <span className="text-label-sm font-label-sm text-primary tracking-wide">
                   Nepal&apos;s Direct Patronage Platform • Simple &amp; Sustainable
                 </span>
-                <span className="text-xs">✨</span>
               </div>
 
               <h1 className="text-display-hero-mobile md:text-display-hero font-display-hero text-on-surface tracking-tight mb-space-sm">
-                Fund your creative passions directly.
+                Fund your creative passions{" "}
+              <span className="text-primary underline decoration-secondary-container decoration-4 underline-offset-8">
+                directly
+              </span>.
               </h1>
 
               <p className="text-body-lg font-body-lg text-on-surface-variant max-w-2xl mb-space-xl leading-relaxed">
@@ -76,6 +79,8 @@ export default function HomePage() {
 
         {/* 2. Feature bento grid */}
         <FeatureBento />
+
+        <ProductSuiteSection />
 
         {/* 3. Streamer / OBS overlay */}
         <section className="py-space-2xl px-space-md md:px-margin-tablet lg:px-margin-desktop max-w-7xl mx-auto" id="streamers">

@@ -1,4 +1,4 @@
-import { ApiResponse } from "@/src/features/auth/models/auth-models";
+import { ApiResponse } from "@/src/features/auth/types/auth.types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5043/api";
 

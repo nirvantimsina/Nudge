@@ -17,7 +17,7 @@ export function CommunityCta({
 }: CommunityCtaProps) {
   return (
     <section className="py-space-2xl px-space-md md:px-margin-tablet lg:px-margin-desktop max-w-7xl mx-auto">
-      <div className="relative rounded-3xl bg-gradient-to-br from-[#9b2f0a] via-[#bc4722] to-[#7e5700] text-on-primary p-8 md:p-14 overflow-hidden shadow-2xl">
+      <div className="relative rounded-3xl bg-linear-to-br from-primary via-primary-container to-secondary text-on-primary p-8 md:p-14 overflow-hidden shadow-2xl">
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-on-primary/10 backdrop-blur-md text-xs font-semibold mb-6 border border-on-primary/20">
             <span>{eyebrowText}</span>

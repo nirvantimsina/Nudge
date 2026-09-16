@@ -1,7 +1,6 @@
 using System.Data;
 using ErrorOr;
 using MediatR;
-using Nudge.Application.Common.Extensions;
 using Nudge.Application.Interfaces;
 using Nudge.Application.Models.Public.Creators.ResponseModel;
 
@@ -22,10 +21,18 @@ public class GetCreatorCardQueryHandler : IRequestHandler<GetCreatorCardQuery, E
     {
         var result = await _repo.QueryFirstOrDefaultAsync<CreatorCardResponseModel>(
             "select * from creator.get_creator_card(@p_slug);",
-            new { p_slug = request.slug},
+            new { p_slug = request.slug },
             commandType: CommandType.Text
         );
 
-        return result.ToDbResult();
+        if (result is null)
+        {
+            return Error.NotFound(
+                code: "Creator.NotFound",
+                description: $"The creator profile matching handle '{request.slug}' could not be found."
+            );
+        }
+
+        return result;
     }
 }

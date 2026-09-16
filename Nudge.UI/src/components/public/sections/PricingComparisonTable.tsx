@@ -23,7 +23,7 @@ const ROWS: ComparisonRow[] = [
   },
   {
     capability: "Standard Platform Fee",
-    nudge: "Low 5% platform fee to maintain infrastructure",
+    nudge: "Low platform fee to maintain infrastructure",
     global: "12%+ on international platforms + FX fees",
   },
   {

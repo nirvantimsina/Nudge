@@ -1,3 +1,5 @@
+// src/features/auth/types/auth.types.ts
+
 export interface LoginRequest {
   userName: string;
   password?: string;
@@ -23,9 +25,15 @@ export interface UserAuthData {
   menuList: MenuItem[];
 }
 
-// Envelope match for your custom API wrapper structure
 export interface ApiResponse<T> {
   status: string;
   msg: string;
   data: T;
+}
+
+export interface AuthState {
+  user: UserAuthData | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  error: string | null;
 }

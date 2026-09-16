@@ -14,7 +14,7 @@ export interface StartPageCtaProps {
 const DEFAULT_HANDLES = ["kathmandu_heritage", "prakriti_music", "sisan_baniya", "alina_sketches"];
 
 export function StartPageCta({
-  domainPrefix = "nudge.np/",
+  domainPrefix = "nudge.com/",
   exampleHandles = DEFAULT_HANDLES,
   onSubmit,
   isSubmitting = false,
@@ -64,7 +64,7 @@ export function StartPageCta({
       onSubmit={handleSubmit}
       className="w-full max-w-xl p-2 bg-surface-container-lowest rounded-full border-2 border-outline-variant shadow-md focus-within:border-primary-container transition-all flex flex-col sm:flex-row items-center gap-2"
     >
-      <div className="flex items-center px-3 py-1.5 w-full sm:w-auto flex-grow text-on-surface-variant font-label-md text-label-md">
+      <div className="flex items-center px-3 py-1.5 w-full sm:w-auto grow text-on-surface-variant font-label-md text-label-md">
         <span className="text-outline font-medium select-none">{domainPrefix}</span>
         <input
           type="text"
