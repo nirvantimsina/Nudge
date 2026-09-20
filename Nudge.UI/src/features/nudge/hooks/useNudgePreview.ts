@@ -6,8 +6,7 @@ import type { NudgeCreator } from "../models/nudge.model";
 import { nudgeService } from "../services/nudge.service";
 
 interface Selection {
-  /** id of the selected preset tier, or null when a custom amount is active */
-  tierId: string | null;
+  tierId: number | null;
   customAmount: number;
 }
 
@@ -22,23 +21,18 @@ interface UseNudgePreviewResult {
   goNext: () => void;
   goPrev: () => void;
   goTo: (index: number) => void;
-  selectTier: (tierId: string) => void;
+  selectTier: (tierId: number) => void;
   selectCustom: (amount: number) => void;
 }
 
 const DEFAULT_CUSTOM_AMOUNT = 1500;
 
-/**
- * Drives the rotating "Live Creator Nudge Preview" hero widget: loads a
- * handful of creators, tracks which one is active, and tracks the
- * currently selected tier (or custom amount) for that creator.
- */
 export function useNudgePreview(): UseNudgePreviewResult {
   const [creators, setCreators] = useState<NudgeCreator[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectionByCreator, setSelectionByCreator] = useState<Record<string, Selection>>({});
+  const [selectionByCreator, setSelectionByCreator] = useState<Record<number, Selection>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -75,7 +69,7 @@ export function useNudgePreview(): UseNudgePreviewResult {
 
   const selectedAmount = useMemo(() => {
     if (!creator) return 0;
-    if (selection.tierId) {
+    if (selection.tierId !== null) {
       return creator.tiers.find((t) => t.id === selection.tierId)?.amount ?? 0;
     }
     return selection.customAmount;
@@ -93,7 +87,7 @@ export function useNudgePreview(): UseNudgePreviewResult {
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
   const selectTier = useCallback(
-    (tierId: string) => {
+    (tierId: number) => {
       if (!creator) return;
       setSelectionByCreator((prev) => ({
         ...prev,

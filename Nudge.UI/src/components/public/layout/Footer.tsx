@@ -7,11 +7,11 @@ export interface FooterLinkColumn {
 }
 
 export interface FooterProps {
-  logoUrl: string;
+  logoUrl?: string;
   paymentRails?: string[];
   columns?: FooterLinkColumn[];
   /** e.g. "© 2026 Nudge Nepal Pvt. Ltd. ..." */
-  copyrightText: string;
+  copyrightText?: string;
 }
 
 const DEFAULT_COLUMNS: FooterLinkColumn[] = [
@@ -65,7 +65,7 @@ export function Footer({
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-surface-container-high">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <Image src={logoUrl} alt="Nudge Logo" width={32} height={32} className="w-8 h-8 object-contain" />
+              <Image src="/logo.svg" alt="Nudge Logo" width={32} height={32} className="w-8 h-8 object-contain" />
               <span className="text-headline-sm font-headline-sm font-bold text-primary">Nudge</span>
               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-secondary-fixed text-on-secondary-fixed border border-secondary-container">
                 नेपाल
@@ -108,7 +108,7 @@ export function Footer({
         </div>
 
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-between text-body-sm text-outline gap-2">
-          <p>{copyrightText}</p>
+          <p>"© 2026 Nudge Nepal Pvt. Ltd. Empowering Himalayan storytellers & makers. Built with love in Kathmandu."</p>
           <div className="flex items-center gap-1 text-xs">
             <span>Namaste</span>
             <span>🙏</span>

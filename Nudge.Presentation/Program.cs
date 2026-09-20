@@ -1,38 +1,44 @@
+using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Nudge.Application.Helpers;
 using Nudge.Application.Interfaces;
+using Nudge.Application.Models.Public.Creators.ResponseModel;
+using Nudge.Infrastructure.Persistence;
 using Nudge.Infrastructure.Repositories;
 using Nudge.Presentation.Middleware;
 using Scalar.AspNetCore;
 using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
-
-//JWT Settings
+// JWT Settings
 var jwtSettings = builder.Configuration
     .GetSection("JwtSettings")
     .Get<JWTSettings>()!;
 builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddSingleton<JWTHelper>();
 
-// add the services here below
+// Services
 builder.Services.AddSingleton<PermissionService>();
 builder.Services.AddScoped<IGenericRepository, GenericRepository>();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly));
 
-//connection string
+// Connection string
 var connectionString = builder.Configuration
     .GetConnectionString("Nudge_DB")!;
 builder.Services.AddSingleton(new DbConnectionFactory(connectionString));
 
-//controllers
+// Dapper JSON column type handlers
+DapperTypeHandlers.Register();
+
+// Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// swagger with JWT support
+// Swagger with JWT support
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, context, cancellationToken) =>
@@ -59,8 +65,7 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-
-//JWT Auth
+// JWT Auth with HttpOnly Cookie extraction
 var secretKey = jwtSettings.SecretKey ?? throw new InvalidOperationException("JWT SecretKey is missing in configuration.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -74,22 +79,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+        };
+
+        // Reads the JWT from the HttpOnly cookie
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.TryGetValue("nudge_auth_token", out var token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
-
 builder.Services.AddAuthorization();
 
-// CORS
+// CORS (AllowCredentials is required for cookies)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorClient", policy =>
     {
-        policy.WithOrigins("https://localhost:7183", "http://localhost:5088", "http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials(); // REQUIRED for HttpOnly cookies
     });
 });
 
@@ -97,58 +114,31 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-// load permissions at startup
-using (var scope = app.Services.CreateScope())
-{
-    var permService = scope.ServiceProvider
-        .GetRequiredService<PermissionService>();
-    await permService.LoadAsync();
-}
-
-// Hydrate cache on application startup
+// Hydrate cache on startup
 using (var startupScope = app.Services.CreateScope())
 {
     var permService = startupScope.ServiceProvider.GetRequiredService<PermissionService>();
     await permService.LoadAsync();
 }
 
-// Enable Swagger in Development
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-// app.UseHttpsRedirection(); // maybe later uncomment this i think i might have to test with the https too
 app.UseRouting();
 app.UseCors("BlazorClient");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-
 app.MapControllers();
 
 app.Run();
-
-// this is for creating password
-// var hash = BCrypt.Net.BCrypt.HashPassword("admin123");
-// Console.WriteLine(hash);
-
-
-
-
-
-
-
-
-
-

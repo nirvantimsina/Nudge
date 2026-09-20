@@ -1,11 +1,10 @@
-using System.Text.Json;
 using Nudge.Domain.Models;
 
 namespace Nudge.Application.Models.Public.Creators.ResponseModel;
 
 public class CreatorCardResponseModel : StatusResponse
 {
-    public int ID { get; set; }
+    public int Id { get; set; }
     public string? Slug { get; set; }
     public string? Name { get; set; }
     public string? FirstName { get; set; }
@@ -13,22 +12,23 @@ public class CreatorCardResponseModel : StatusResponse
     public string? Avatar { get; set; }
     public bool IsVerified { get; set; }
 
-    public string? Tiers { get; set; }
-    public string? Recent_Nudge { get; set; }
+    public List<TierDto> Tiers { get; set; } = new();
+    public RecentNudgeDto? RecentNudge { get; set; }
+}
 
-    public object ToFrontendPayload()
-    {
-        return new
-        {
-            id = this.ID.ToString(),
-            slug = this.Slug,
-            name = this.Name,
-            firstname = this.FirstName,
-            bio = this.Bio,
-            avatar = this.Avatar,
-            isverified = this.IsVerified,
-            tiers = string.IsNullOrEmpty(this.Tiers) ? new object[] {} : JsonSerializer.Deserialize<object>(this.Tiers),
-            recentNudge = string.IsNullOrEmpty(this.Recent_Nudge) ? new object[] {} : JsonSerializer.Deserialize<object>(this.Recent_Nudge)
-        };
-    }
+public class TierDto
+{
+    public int Id { get; set; }
+    public string Label { get; set; } = default!;
+    public decimal Amount { get; set; }
+    public string? Note { get; set; }
+}
+
+public class RecentNudgeDto
+{
+    public string? DisplayName { get; set; }
+    public decimal Amount { get; set; }
+    public string? Message { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public string? NudgeType { get; set; }
 }
