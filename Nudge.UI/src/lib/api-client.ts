@@ -1,6 +1,7 @@
+// src/lib/api-client.ts
 import { ApiResponse } from "@/src/features/auth/types/auth.types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5043/api";
+export const API_BASE_URL = "http://localhost:5043/api";
 
 export class ApiServerError extends Error {
   statusCode: string;
@@ -13,21 +14,11 @@ export class ApiServerError extends Error {
   }
 }
 
-function getAuthToken(): string | null {
-  return typeof window !== "undefined" ? localStorage.getItem("token") : null;
-}
-
-/** Headers for JSON requests. Do NOT use this for multipart uploads — see buildAuthHeaders(). */
+/** Standard JSON headers. Cookies are handled by the browser engine. */
 function buildHeaders(): Record<string, string> {
-  return { "Content-Type": "application/json", ...buildAuthHeaders() };
-}
-
-/** Auth-only headers, safe to spread into any request type including multipart uploads. */
-function buildAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {};
-  const token = getAuthToken();
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  return headers;
+  return {
+    "Content-Type": "application/json",
+  };
 }
 
 async function handleResponse<TResponse>(response: Response): Promise<TResponse> {
@@ -65,31 +56,12 @@ function buildUrl(endpoint: string, params?: RequestOptions["params"]) {
   return url.toString();
 }
 
-/** Pulls a filename out of a Content-Disposition header, e.g. `attachment; filename="report.pdf"`. */
-function extractFilename(response: Response, fallback: string): string {
-  const header = response.headers.get("Content-Disposition");
-  const match = header?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
-  return match ? decodeURIComponent(match[1]) : fallback;
-}
-
-/** Triggers a browser "Save As" for a Blob. No-op on the server. */
-export function triggerBrowserDownload(blob: Blob, filename: string) {
-  if (typeof window === "undefined") return;
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
-
 export const apiClient = {
   async get<TResponse>(endpoint: string, options: RequestOptions = {}): Promise<TResponse> {
     const response = await fetch(buildUrl(endpoint, options.params), {
       method: "GET",
       headers: buildHeaders(),
+      credentials: "include", // Transmit HttpOnly cookies automatically
       signal: options.signal,
     });
     return handleResponse<TResponse>(response);
@@ -104,6 +76,7 @@ export const apiClient = {
       method: "POST",
       headers: buildHeaders(),
       body: JSON.stringify(payload),
+      credentials: "include",
       signal: options.signal,
     });
     return handleResponse<TResponse>(response);
@@ -118,6 +91,7 @@ export const apiClient = {
       method: "PUT",
       headers: buildHeaders(),
       body: JSON.stringify(payload),
+      credentials: "include",
       signal: options.signal,
     });
     return handleResponse<TResponse>(response);
@@ -127,22 +101,12 @@ export const apiClient = {
     const response = await fetch(buildUrl(endpoint, options.params), {
       method: "DELETE",
       headers: buildHeaders(),
+      credentials: "include",
       signal: options.signal,
     });
     return handleResponse<TResponse>(response);
   },
 
-  /**
-   * Uploads a file (or files) as multipart/form-data. Pass a pre-built FormData,
-   * or an object of fields/files and it'll build the FormData for you.
-   *
-   * IMPORTANT: never set "Content-Type" yourself for multipart requests — the
-   * browser must set it (including the multipart boundary) automatically. That's
-   * why this uses buildAuthHeaders() instead of buildHeaders().
-   *
-   * Example:
-   *   apiClient.upload("/creators/kyc-document", { file: fileInput.files[0], docType: "citizenship" })
-   */
   async upload<TResponse>(
     endpoint: string,
     data: FormData | Record<string, Blob | string>,
@@ -158,43 +122,10 @@ export const apiClient = {
 
     const response = await fetch(buildUrl(endpoint, options.params), {
       method: "POST",
-      headers: buildAuthHeaders(),
+      credentials: "include",
       body: formData,
       signal: options.signal,
     });
     return handleResponse<TResponse>(response);
-  },
-
-  /**
-   * Downloads a binary file (PDF export, CSV, image, etc). Returns the raw Blob
-   * plus the filename the server suggested, and optionally triggers a browser
-   * "Save As" immediately.
-   *
-   * Example:
-   *   const { blob, filename } = await apiClient.download("/reports/monthly-payouts.pdf", {
-   *     triggerSave: true,
-   *   });
-   */
-  async download(
-    endpoint: string,
-    options: RequestOptions & { triggerSave?: boolean; fallbackFilename?: string } = {}
-  ): Promise<{ blob: Blob; filename: string }> {
-    const response = await fetch(buildUrl(endpoint, options.params), {
-      method: "GET",
-      headers: buildAuthHeaders(),
-      signal: options.signal,
-    });
-
-    if (!response.ok) {
-      // Downloads don't return your JSON envelope, so just surface the HTTP status.
-      throw new ApiServerError("DOWNLOAD_FAILED", `Download failed: HTTP ${response.status}`, response.status);
-    }
-
-    const blob = await response.blob();
-    const filename = extractFilename(response, options.fallbackFilename ?? "download");
-
-    if (options.triggerSave) triggerBrowserDownload(blob, filename);
-
-    return { blob, filename };
   },
 };

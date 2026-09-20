@@ -5,6 +5,14 @@ export interface LoginRequest {
   password?: string;
 }
 
+export interface SignUpRequest {
+  userName: string;
+  password?: string;
+  name: string;
+  address?: string;
+  phone?: string;
+}
+
 export interface MenuItem {
   menuId: number;
   menuName: string;
@@ -16,13 +24,20 @@ export interface MenuItem {
 }
 
 export interface UserAuthData {
-  token: string;
+  token?: string; // Stored in HttpOnly cookie; may be omitted or empty in body
   userName: string;
   name: string;
   roleName: string;
   roleId: number;
   permissions: string[];
   menuList: MenuItem[];
+}
+
+// Lightweight session returned by /Auth/Me
+export interface UserSessionData {
+  userId: string;
+  userName: string;
+  roleId: number;
 }
 
 export interface ApiResponse<T> {

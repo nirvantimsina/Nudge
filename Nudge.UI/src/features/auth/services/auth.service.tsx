@@ -3,6 +3,6 @@ import { LoginRequest, UserAuthData } from "@/src/features/auth/types/auth.types
 
 export const authService = {
   login: async (payload: LoginRequest): Promise<UserAuthData> => {
-    return await apiClient.post<LoginRequest, UserAuthData>("/Auth/Login", payload);
+    return await apiClient.post<LoginRequest, UserAuthData>("/auth", payload);
   }
 };

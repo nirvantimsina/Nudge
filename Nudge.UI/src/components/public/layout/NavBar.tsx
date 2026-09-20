@@ -4,8 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Monitor, Spline, ChevronDown, ArrowRight, ShieldCheck } from "lucide-react";
+import { Monitor, Spline, ChevronDown, ArrowRight, ShieldCheck, LogOut } from "lucide-react";
 import { Button } from "@/src/components/public/common/Button";
+import { useAuth } from "@/src/features/auth/hooks/use.auth.hook";
 
 /* -------------------------------------------------------------------------- */
 /*                          MODULAR PRODUCTS CONFIG                           */
@@ -52,29 +53,45 @@ const NUDGE_PRODUCTS: ProductItem[] = [
 export function NavBar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   // Dynamic Product Context Detection
   const isStudio = pathname.startsWith("/studio");
   const isLoom = pathname.startsWith("/loom");
 
   return (
-    <header className="bg-surface sticky top-0 z-50 border-b border-outline-variant shadow-sm backdrop-blur-md bg-opacity-95">
-      <div className="flex justify-between items-center w-full px-space-md md:px-margin-tablet lg:px-margin-desktop max-w-7xl mx-auto h-16">
+<header className="sticky top-0 z-50 w-full border-b border-outline-variant/60 bg-surface/75 backdrop-blur-md shadow-xs transition-colors">
+    <div className="flex justify-between items-center w-full px-space-md md:px-margin-tablet lg:px-margin-desktop max-w-7xl mx-auto h-16">
         
-        {/* Brand identity + Dynamic Route Product Pill */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          <Link className="flex items-center gap-2 group" href="/">
+      {/* Brand identity + Dynamic Route Product Pill */}
+      <div className="flex items-center gap-2 sm:gap-2.5">
+        <Link className="flex items-center gap-2 group" href="/">
+          <div className="relative w-7.5 h-7.5 flex items-center justify-center">
+            {/* 1. Static Logo (default) */}
             <Image
               src="/logo.svg"
               alt="Nudge Logo"
               width={30}
               height={30}
-              className="w-7.5 h-7.5 object-contain group-hover:rotate-6 transition-transform duration-200"
+              priority
+              className="w-7.5 h-7.5 object-contain transition-opacity duration-200 group-hover:opacity-0"
             />
-            <span className="font-headline-md font-bold text-primary text-xl tracking-tight">
-              Nudge
-            </span>
-          </Link>
+
+            {/* 2. Animated SVG Logo (visible on hover) */}
+            <Image
+              src="/navbar-animation.svg"
+              alt="Nudge Logo Animated"
+              width={30}
+              height={30}
+              unoptimized // Ensures animated SVG loops play properly without Next.js static compression
+              className="w-7.5 h-7.5 object-contain absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-hover:scale-105"
+            />
+          </div>
+
+          <span className="font-headline-md font-bold text-primary text-xl tracking-tight transition-colors duration-200 group-hover:text-primary/90">
+            Nudge
+          </span>
+        </Link>
 
           {/* Conditional Product Badge */}
           {isStudio ? (
@@ -221,17 +238,41 @@ export function NavBar() {
 
         {/* Action Cluster */}
         <div className="flex items-center gap-2.5">
-          <Link
-            href="/login"
-            className="hidden sm:inline-block px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-on-surface hover:text-primary transition-colors"
-          >
-            Log In
-          </Link>
-          <Link href="/start">
-            <Button variant="primary" size="sm">
-              Start Page
-            </Button>
-          </Link>
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-surface-container border border-outline-variant/70 text-xs font-bold text-on-surface transition-colors"
+              >
+                <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
+                  {(user.name || user.userName || "U").slice(0, 2).toUpperCase()}
+                </div>
+                <span>{user.name || user.userName}</span>
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                title="Log out"
+                className="p-2 rounded-xl text-outline hover:text-error hover:bg-error/10 transition-colors"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/auth"
+                className="hidden sm:inline-block px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-on-surface hover:text-primary transition-colors"
+              >
+                Log In
+              </Link>
+              <Link href="/auth?tab=signup">
+                <Button variant="primary" size="sm">
+                  Start Page
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
       </div>
