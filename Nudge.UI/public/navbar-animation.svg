@@ -1,0 +1,127 @@
+<!-- Creator Capital • Animated SVG Loader (No Shadow) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <defs>
+    <linearGradient id="fintechGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CF592C" />
+      <stop offset="55%" stop-color="#B8471D" />
+      <stop offset="100%" stop-color="#8E300E" />
+    </linearGradient>
+    <style>
+      .orb {
+        transform-origin: 671px 282px;
+        animation: orbVault 1.4s infinite;
+      }
+      .pillar {
+        transform-origin: 300px 848px;
+        animation: pillarShift 1.4s infinite;
+      }
+      .arch {
+        transform-origin: 671px 848px;
+        animation: archSettle 1.4s infinite;
+      }
+
+      @keyframes orbVault {
+        0% {
+          transform: translate(0, 0) scale(1);
+          animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.15);
+        }
+        20% {
+          transform: translate(0, 0) scale(1);
+          animation-timing-function: cubic-bezier(0.3, 0, 0.6, 0.35);
+        }
+        28% {
+          transform: translate(-385px, 480px) scale(0.92, 1.15) rotate(-24deg);
+          animation-timing-function: cubic-bezier(0.35, 0.1, 0.55, 0.75);
+        }
+        44% {
+          transform: translate(-280px, 110px) scale(0.94, 1.12) rotate(-18deg);
+          animation-timing-function: cubic-bezier(0.3, 0.15, 0.5, 0.85);
+        }
+        56% {
+          transform: translate(-125px, -115px) scale(1.08, 0.94) rotate(8deg);
+          animation-timing-function: cubic-bezier(0.3, 0.2, 0.4, 1);
+        }
+        68% {
+          transform: translate(0, 18px) scale(1.14, 0.88) rotate(0deg);
+          animation-timing-function: cubic-bezier(0.34, 1.3, 0.55, 1);
+        }
+        74% {
+          transform: translate(0, -6px) scale(0.97, 1.03);
+          animation-timing-function: cubic-bezier(0.4, 0.9, 0.6, 1);
+        }
+        81% {
+          transform: translate(0, 1.8px) scale(1.01, 0.99);
+          animation-timing-function: ease-out;
+        }
+        87% {
+          transform: translate(0, 0) scale(1);
+          animation-timing-function: ease-in-out;
+        }
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+      }
+
+      @keyframes pillarShift {
+        0% {
+          transform: scale(1) skewX(0);
+          animation-timing-function: ease-in-out;
+        }
+        30% {
+          transform: scale(1) skewX(0);
+          animation-timing-function: cubic-bezier(0.3, 0.1, 0.5, 0.9);
+        }
+        42% {
+          transform: scaleY(0.982) skewX(-1.2deg);
+          animation-timing-function: cubic-bezier(0.3, 0.1, 0.5, 0.9);
+        }
+        52% {
+          transform: scaleY(1.008) skewX(0.4deg);
+          animation-timing-function: ease-out;
+        }
+        60% {
+          transform: scale(1) skewX(0);
+          animation-timing-function: ease-in-out;
+        }
+        100% {
+          transform: scale(1) skewX(0);
+        }
+      }
+
+      @keyframes archSettle {
+        0% {
+          transform: scale(1, 1);
+          animation-timing-function: ease-in-out;
+        }
+        64% {
+          transform: scale(1, 1);
+          animation-timing-function: cubic-bezier(0.34, 1.2, 0.5, 1);
+        }
+        68% {
+          transform: scale(1.025, 0.97);
+          animation-timing-function: cubic-bezier(0.3, 0.2, 0.5, 1);
+        }
+        75% {
+          transform: scale(0.995, 1.005);
+          animation-timing-function: ease-out;
+        }
+        82% {
+          transform: scale(1, 1);
+          animation-timing-function: ease-in-out;
+        }
+        100% {
+          transform: scale(1, 1);
+        }
+      }
+    </style>
+  </defs>
+
+  <!-- Left Leaning Parallelogram Pillar -->
+  <path class="pillar" fill="url(#fintechGrad)" d="M 458 178 C 484 178 504 196 492 232 L 368 792 C 359 824 334 848 300 848 L 226 848 C 200 848 180 830 192 794 L 316 234 C 325 202 350 178 384 178 Z" />
+
+  <!-- Right Arch Torso -->
+  <path class="arch" fill="url(#fintechGrad)" d="M 536 525 C 536 438 600 398 678 398 C 758 398 806 448 806 528 L 806 802 C 806 832 780 848 750 848 L 592 848 C 562 848 536 832 536 802 Z" />
+
+  <!-- Dynamic Hurdling Sphere -->
+  <circle class="orb" cx="671" cy="282" r="80" fill="url(#fintechGrad)" />
+</svg>

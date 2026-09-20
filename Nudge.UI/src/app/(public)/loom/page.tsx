@@ -147,20 +147,21 @@ export default function LoomPage() {
     <>
       <NavBar />
 
-      <main className="relative h-[calc(100vh-4rem)] overflow-y-auto snap-y snap-proximity scroll-pt-6 scroll-smooth bg-background text-on-surface font-body-md antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
-        {/* Subtle Mandala Texture Backdrop */}
-        <div className="absolute inset-0 bg-[radial-gradient(#bc4722_0.75px,transparent_0.75px),radial-gradient(#dfc0b7_0.75px,#fff9ed_0.75px)] bg-size-[30px_30px] opacity-25 pointer-events-none" />
+    {/* Remove h-[calc(100vh-4rem)] and overflow-y-auto; use min-h-screen and pt-16 */}
+    <main className="snap-start relative min-h-screen bg-background text-on-surface font-body-md antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+      {/* Texture now extends to top: 0 behind the glass navbar */}
+      <div className="absolute inset-0 bg-[radial-gradient(#bc4722_0.75px,transparent_0.75px),radial-gradient(#dfc0b7_0.75px,#fff9ed_0.75px)] bg-size-[30px_30px] opacity-25 pointer-events-none" />
 
-        {/* 1. HERO SECTION (Locked to Screen Height without cutoff peek) */}
-        <section className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center py-12 max-w-7xl mx-auto px-space-md md:px-margin-tablet lg:px-margin-desktop">
-          <div className="text-center max-w-3xl mx-auto">
-            {/* Trust pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-high border border-outline-variant/70 mb-6 shadow-xs">
-              <span className="flex h-2 w-2 rounded-full bg-tertiary" />
-              <span className="text-label-sm font-label-sm text-on-surface-variant font-medium">
-                100% Free for Nudge Creators • Zero Platform Cut • Native Fonepay &amp; eSewa Support
-              </span>
-            </div>
+      {/* 1. HERO SECTION (Full screen minus navbar offset) */}
+      <section className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center py-12 max-w-7xl mx-auto px-space-md md:px-margin-tablet lg:px-margin-desktop">
+        <div className="text-center max-w-3xl mx-auto">
+          {/* Trust pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-high border border-outline-variant/70 mb-6 shadow-xs">
+            <span className="flex h-2 w-2 rounded-full bg-tertiary" />
+            <span className="text-label-sm font-label-sm text-on-surface-variant font-medium">
+              100% Free for Nudge Creators • Zero Platform Cut • Native Fonepay &amp; eSewa Support
+            </span>
+          </div>
 
             <h1 className="text-display-hero-mobile md:text-display-hero font-display-hero text-on-surface tracking-tight mb-6 font-bold leading-tight">
               Every Thread of Your Digital Presence.{" "}

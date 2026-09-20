@@ -53,7 +53,7 @@ export default function StudioPage() {
         <>
             <NavBar />
 
-            <main className="snap-start relative h-[calc(100vh-4rem)] overflow-y-auto snap-y snap-proximity scroll-pt-6 scroll-smooth bg-background text-on-surface font-body-md selection:bg-primary selection:text-on-primary antialiased">
+            <main className="snap-start min-h-screen snap-y snap-proximity scroll-pt-6 scroll-smooth bg-background text-on-surface font-body-md selection:bg-primary selection:text-on-primary antialiased">
                 {/* 1. HERO SECTION */}
                 <section className="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden border-b border-outline-variant/60">
                     {/* Subtle Ambient Background */}

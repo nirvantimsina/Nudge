@@ -32,7 +32,9 @@ namespace Nudge.Presentation.Controllers
         {
             get
             {
-                var claimValue = User.FindFirstValue(ClaimTypes.Role);
+                var claimValue = User.FindFirstValue(ClaimTypes.Role) 
+                ?? User.FindFirstValue("roleid")
+                ?? User.FindFirstValue("RoleId");
                 return int.TryParse(claimValue, out var roleid) ? roleid : 0;
             }
         }

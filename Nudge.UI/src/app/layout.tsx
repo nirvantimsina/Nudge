@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CustomCursor } from "../components/public/common/CustomCursor";
+import { AuthProvider } from "../features/auth/hooks/use.auth.hook";
+import { ContextMenu } from "../components/public/common/ContextMenu";
+import { ConsoleEasterEgg } from "../components/public/eastereggs/ConsoleEasterEgg";
 
 export const metadata: Metadata = {
   title: "Nudge | Nepal's Creator Patronage Platform",
@@ -19,7 +23,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-surface text-on-surface font-body-md antialiased min-h-screen flex flex-col selection:bg-primary/20 selection:text-primary">
+      <ConsoleEasterEgg />
+      <CustomCursor />
+      <AuthProvider >
+        <ContextMenu />
         {children}
+      </AuthProvider>
       </body>
     </html>
   );

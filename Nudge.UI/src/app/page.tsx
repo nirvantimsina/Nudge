@@ -164,10 +164,7 @@ export default function HomePage() {
         <CommunityCta />
       </main>
 
-      <Footer
-        logoUrl="/logo.png"
-        copyrightText="© 2026 Nudge Nepal Pvt. Ltd. Empowering Himalayan storytellers & makers. Built with love in Kathmandu."
-      />
+      <Footer   />
     </>
   );
 }

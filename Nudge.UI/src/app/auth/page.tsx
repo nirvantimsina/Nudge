@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Sparkles,
   ShieldCheck,
@@ -17,12 +18,32 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/src/features/auth/hooks/use.auth.hook";
 import { Button } from "@/src/components/public/common/Button";
+import { LogoLoader } from "@/src/components/public/common/LogoLoader";
 
-export default function AuthPage() {
+function AuthForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [showLoginPass, setShowLoginPass] = useState(false);
   const [showRegPass, setShowRegPass] = useState(false);
   const [showRegConfirmPass, setShowRegConfirmPass] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Sync tab state whenever ?tab= changes in the URL
+  useEffect(() => {
+    if (tabParam === "signup") {
+      setActiveTab("signup");
+    } else if (tabParam === "login") {
+      setActiveTab("login");
+    }
+  }, [tabParam]);
+
+  // Clear errors when switching tabs
+  useEffect(() => {
+    setFormError(null);
+  }, [activeTab]);
 
   // Form Field States
   const [loginUser, setLoginUser] = useState("");
@@ -36,39 +57,62 @@ export default function AuthPage() {
   const [regConfirmPass, setRegConfirmPass] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(true);
 
-  const { login, isLoading: isLoginLoading, error: loginError } = useAuth();
+  const { login, signup, isLoading } = useAuth();
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+
     if (activeTab === "login") {
-      login({ userName: loginUser, password: loginPass });
+      try {
+        await login({ userName: loginUser, password: loginPass });
+        router.push("/dashboard");
+      } catch (err: any) {
+        setFormError(err.message || "Invalid username or password.");
+      }
     } else {
       if (!agreeTerms) {
-        alert("Please accept the terms to proceed.");
+        setFormError("Please accept the terms to proceed.");
         return;
       }
       if (regPass !== regConfirmPass) {
-        alert("Passwords do not match!");
+        setFormError("Passwords do not match!");
         return;
       }
-      console.log("Registering creator:", {
-        regUser,
-        regName,
-        regPhone,
-        regAddress,
-      });
+
+      try {
+        await signup({
+          userName: regUser,
+          password: regPass,
+          name: regName,
+          phone: regPhone,
+          address: regAddress,
+        });
+        router.push("/dashboard");
+      } catch (err: any) {
+        setFormError(err.message || "Failed to create creator account.");
+      }
     }
   };
 
   return (
     <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden bg-surface text-on-surface font-sans selection:bg-primary-fixed selection:text-on-primary-fixed">
+      {isLoading && (
+        <LogoLoader
+          label={
+            activeTab === "login"
+              ? "Authenticating your session…"
+              : "Creating your creator page…"
+          }
+          fullscreen={true}
+        />
+      )}
+
       {/* 🧩 LEFT PANEL: 50% Desktop Width */}
       <div className="hidden md:flex md:w-1/2 bg-surface-container-low border-r border-outline-variant/60 flex-col justify-between p-8 lg:p-12 select-none relative overflow-hidden shrink-0 h-full">
-        {/* Subtle Ambient Glow */}
         <div className="absolute -top-24 -left-24 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-6 right-0 w-72 h-72 bg-secondary-container/20 rounded-full blur-2xl pointer-events-none" />
 
-        {/* Brand Header */}
         <div className="relative z-10">
           <Link className="inline-flex items-center gap-2.5 group" href="/">
             <div className="w-10 h-10 rounded-xl bg-surface-container-lowest shadow-sm border border-outline-variant/60 flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
@@ -92,7 +136,6 @@ export default function AuthPage() {
           </Link>
         </div>
 
-        {/* Narrative & Proof */}
         <div className="my-auto relative z-10 max-w-lg space-y-5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-lowest/90 border border-outline-variant/70 text-xs font-semibold text-on-surface shadow-xs">
             <Sparkles size={14} className="text-primary" />
@@ -111,7 +154,6 @@ export default function AuthPage() {
             </p>
           </div>
 
-          {/* Social Proof Card */}
           <div className="bg-surface-container-lowest/95 backdrop-blur-md rounded-2xl p-4 border border-outline-variant/70 shadow-xs space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -135,7 +177,6 @@ export default function AuthPage() {
             </p>
           </div>
 
-          {/* Trust Rails */}
           <div className="pt-2 border-t border-outline-variant/50 flex items-center justify-between text-xs text-outline">
             <div className="flex items-center gap-1.5 text-on-surface-variant">
               <ShieldCheck size={14} className="text-tertiary" />
@@ -148,7 +189,6 @@ export default function AuthPage() {
           </div>
         </div>
 
-        {/* Footer info */}
         <div className="relative z-10 flex items-center justify-between text-xs text-outline">
           <span>&copy; 2026 Nudge Nepal Pvt. Ltd.</span>
           <div className="flex items-center gap-4">
@@ -160,7 +200,6 @@ export default function AuthPage() {
 
       {/* 🧩 RIGHT PANEL: 50% Desktop Width */}
       <div className="w-full md:w-1/2 flex-1 flex flex-col justify-between items-center p-6 sm:p-8 lg:p-10 relative bg-surface h-full overflow-hidden">
-        {/* Top Bar Navigation */}
         <div className="w-full max-w-md flex items-center justify-between">
           <Link
             href="/"
@@ -175,9 +214,7 @@ export default function AuthPage() {
           </div>
         </div>
 
-        {/* Center Card */}
         <div className="w-full max-w-md bg-surface-container-lowest rounded-3xl border border-outline-variant shadow-lg p-6 sm:p-7 my-auto">
-          {/* Heading */}
           <div className="mb-4">
             <h2 className="font-headline-md text-2xl font-bold text-on-surface tracking-tight">
               {activeTab === "login" ? "Welcome Back" : "Claim Your Handle"}
@@ -189,10 +226,10 @@ export default function AuthPage() {
             </p>
           </div>
 
-          {loginError && (
+          {formError && (
             <div className="mb-3 p-2.5 rounded-xl bg-error-container text-on-error-container text-xs flex items-center gap-2">
               <Info size={14} className="shrink-0" />
-              <span>{loginError}</span>
+              <span>{formError}</span>
             </div>
           )}
 
@@ -242,7 +279,6 @@ export default function AuthPage() {
             <span>Continue with Google</span>
           </button>
 
-          {/* Divider */}
           <div className="relative flex items-center mb-4">
             <div className="flex-grow border-t border-outline-variant/60" />
             <span className="flex-shrink mx-3 text-[10px] font-bold tracking-wider uppercase text-outline">
@@ -251,7 +287,6 @@ export default function AuthPage() {
             <div className="flex-grow border-t border-outline-variant/60" />
           </div>
 
-          {/* Form */}
           <form onSubmit={handleFormSubmit} className="flex flex-col">
             <div className="overflow-hidden w-full relative">
               <div
@@ -329,7 +364,7 @@ export default function AuthPage() {
                   </div>
                 </div>
 
-                {/* PANEL B: SIGNUP (Compact Grid) */}
+                {/* PANEL B: SIGNUP */}
                 <div
                   className={`w-1/2 pl-3 flex flex-col justify-start space-y-2.5 shrink-0 transition-opacity duration-300 ${
                     activeTab === "signup"
@@ -480,7 +515,7 @@ export default function AuthPage() {
                 variant="primary"
                 size="md"
                 fullWidth
-                isLoading={activeTab === "login" ? isLoginLoading : false}
+                isLoading={isLoading}
                 rightIcon={<ArrowRight size={15} />}
               >
                 {activeTab === "login" ? "Continue to Dashboard" : "Claim Page & Get Started"}
@@ -515,11 +550,18 @@ export default function AuthPage() {
           </form>
         </div>
 
-        {/* Bottom Safety Micro-Badge */}
         <div className="text-[11px] text-outline font-medium">
           Protected by eSewa KYC &amp; Interbank Direct Settlement
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthForm />
+    </Suspense>
   );
 }
