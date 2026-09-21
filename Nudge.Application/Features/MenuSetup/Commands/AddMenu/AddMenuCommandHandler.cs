@@ -1,7 +1,5 @@
 using MediatR;
-using Microsoft.Extensions.Logging;
-using Nudge.Application.Interfaces;
-using Nudge.Domain.Models;
+using Nudge.Application.Common.Interfaces;
 using System.Data;
 using Nudge.Shared.Wrappers;
 

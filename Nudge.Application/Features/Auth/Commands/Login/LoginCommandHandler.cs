@@ -1,10 +1,10 @@
 using MediatR;
 using Nudge.Application.Features.Auth.Queries.GetMenuList;
 using Nudge.Application.Helpers;
-using Nudge.Application.Interfaces;
 using Nudge.Application.Models.Auth.Response;
 using System.Data;
 using Nudge.Shared.Wrappers;
+using Nudge.Application.Common.Interfaces;
 
 namespace Nudge.Application.Features.Auth.Commands.Login
 {

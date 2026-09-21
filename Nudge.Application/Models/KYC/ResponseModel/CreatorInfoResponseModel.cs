@@ -6,7 +6,7 @@ public class CreatorInfoResponseModel : StatusResponse
 {
     public int CreatorId { get; set; }
     public string FullName { get; set; } = null!;
-    public DateOnly? DobAd { get; set; }
+    public DateTime? DobAd { get; set; }
     public string? DobBs { get; set; }
     public int Gender { get; set; }
     public string? FatherName { get; set; }

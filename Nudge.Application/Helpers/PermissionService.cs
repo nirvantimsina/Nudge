@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Nudge.Application.Interfaces;
+using Nudge.Application.Common.Interfaces;
 
 namespace Nudge.Application.Helpers;
 

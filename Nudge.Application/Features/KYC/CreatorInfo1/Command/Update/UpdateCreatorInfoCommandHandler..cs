@@ -5,7 +5,7 @@ using Nudge.Application.Common.Extensions;
 using Nudge.Application.Common.Interfaces;
 using Nudge.Domain.Models;
 
-namespace Nudge.Application.Features.Public.Creators.CreatorInfo.Commands.Update;
+namespace Nudge.Application.Features.KYC.CreatorInfo.Commands.Update;
 
 public class UpdateCreatorInfoCommand : IRequest<ErrorOr<StatusResponse>>
 {
@@ -22,12 +22,12 @@ public class UpdateCreatorInfoCommand : IRequest<ErrorOr<StatusResponse>>
 public class UpdateCreatorInfoCommandHandler : IRequestHandler<UpdateCreatorInfoCommand, ErrorOr<StatusResponse>>
 {
     private readonly IGenericRepository _repo;
-    private readonly ICreatorScopedRequest _scope;
+    private readonly ICreatorContext _context;
 
-    public UpdateCreatorInfoCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
+    public UpdateCreatorInfoCommandHandler(IGenericRepository repo, ICreatorContext context)
     {
         _repo = repo;
-        _scope = scope;
+        _context = context;
     }
 
     public async Task<ErrorOr<StatusResponse>> Handle(UpdateCreatorInfoCommand request, CancellationToken cancellationToken)
@@ -35,7 +35,7 @@ public class UpdateCreatorInfoCommandHandler : IRequestHandler<UpdateCreatorInfo
         var result = await _repo.QueryFirstOrDefaultAsync<StatusResponse>(
             "SELECT * FROM kyc.update_creator_info(@p_creatorid, @p_fullname, @p_dobad, @p_dobbs, @p_gender, @p_fathername, @p_mothername, @p_grandfathername, @p_spousename);",
             new {
-                p_creatorid = _scope.CreatorId,
+                p_creatorid = _context.CreatorId,
                 p_fullname = request.FullName,
                 p_dobad = request.DobAd,
                 p_dobbs = request.DobBs,

@@ -4,6 +4,7 @@ import { CustomCursor } from "../components/public/common/CustomCursor";
 import { AuthProvider } from "../features/auth/hooks/use.auth.hook";
 import { ContextMenu } from "../components/public/common/ContextMenu";
 import { ConsoleEasterEgg } from "../components/public/eastereggs/ConsoleEasterEgg";
+import { ToastContainer } from "../components/common/ToastContainer";
 
 export const metadata: Metadata = {
   title: "Nudge | Nepal's Creator Patronage Platform",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <AuthProvider >
         <ContextMenu />
         {children}
+        <ToastContainer />
       </AuthProvider>
       </body>
     </html>

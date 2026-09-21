@@ -24,12 +24,12 @@ public record UpdateCreatorDocsCommand(
 public class UpdateCreatorDocsCommandHandler : IRequestHandler<UpdateCreatorDocsCommand, ErrorOr<StatusResponse>>
 {
     private readonly IGenericRepository _repo;
-    private readonly ICreatorScopedRequest _scope;
+    private readonly ICreatorContext _context;
 
-    public UpdateCreatorDocsCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
+    public UpdateCreatorDocsCommandHandler(IGenericRepository repo, ICreatorContext context)
     {
         _repo = repo;
-        _scope = scope;
+        _context = context;
     }
 
     public async Task<ErrorOr<StatusResponse>> Handle(UpdateCreatorDocsCommand request, CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ public class UpdateCreatorDocsCommandHandler : IRequestHandler<UpdateCreatorDocs
             )";
 
         var Params = new {
-            p_creatorid = _scope.CreatorId,
+            p_creatorid = _context.CreatorId,
             p_citizenshipid = request.CitizenshipId,
             p_citizenshipissueddistrict = request.CitizenshipIssuedDistrict,
             p_citizenshipissueddate = request.CitizenshipIssuedDate,

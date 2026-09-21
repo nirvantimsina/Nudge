@@ -1,5 +1,5 @@
 using MediatR;
-using Nudge.Application.Interfaces;
+using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Models.Reports.ResponseModel;
 using Nudge.Domain.Models;
 using System.Data;

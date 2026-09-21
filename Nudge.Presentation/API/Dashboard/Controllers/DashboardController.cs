@@ -13,7 +13,6 @@ namespace Nudge.Presentation.Controllers
         [HttpGet("DashboardData")]
         public async Task<IActionResult> GetDashboardData([FromQuery] GetDashboardQuery query)
         {
-            query.UserId = CurrentUserId;
             ErrorOr<DashboardResponseModel> result = await mediator.Send(query);
 
             return HandleErrorOr(result);

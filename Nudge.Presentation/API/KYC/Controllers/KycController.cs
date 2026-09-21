@@ -4,9 +4,10 @@ using Nudge.Application.Features.KYC.CreatorAddress.Commands;
 using Nudge.Application.Features.KYC.CreatorDocs.Commands;
 using Nudge.Application.Features.KYC.CreatorDocs.Commands.Update;
 using Nudge.Application.Features.KYC.CreatorInfo.Commands.Insert;
+using Nudge.Application.Features.KYC.CreatorInfo.Commands.Update;
+using Nudge.Application.Features.KYC.CreatorInfo.Query.Get;
 using Nudge.Application.Features.KYC.CreatorVerification.Commands;
-using Nudge.Application.Features.Public.Creators.CreatorInfo.Commands.Update;
-using Nudge.Application.Features.Public.Creators.CreatorInfo.Query.Get;
+using Nudge.Application.Features.KYC.CreatorDocs.Query.Get;
 
 namespace Nudge.Presentation.Controllers.KYC
 {
@@ -22,23 +23,21 @@ namespace Nudge.Presentation.Controllers.KYC
 
         [HttpPut("CreatorInfo")]
         public async Task<IActionResult> UpdateCreatorInfo([FromBody] UpdateCreatorInfoCommand command)
-        {            
-            logger.LogInformation("KYC Info Update for Creator ID: {CreatorId}", command.CreatorId);
+        {
             var result = await mediator.Send(command);
             return HandleErrorOr(result);
         }
 
         [HttpGet("CreatorInfo")]
-        public async Task<IActionResult> GetCreatorInfo(GetCreatorInfoQuery query)
+        public async Task<IActionResult> GetCreatorInfo()
         {
-            var result = await mediator.Send(query);
+            var result = await mediator.Send(new GetCreatorInfoQuery());
             return HandleErrorOr(result);
         }
 
         [HttpPost("CreatorDocs")]
         public async Task<IActionResult> InsertCreatorDocs([FromBody] InsertCreatorDocsCommand command)
         {
-            logger.LogInformation("KYC Creator Docs insert for creator: {CreatoId}", command.CreatorId);
             var result = await mediator.Send(command);
             return HandleErrorOr(result);
         }
@@ -50,10 +49,16 @@ namespace Nudge.Presentation.Controllers.KYC
             return HandleErrorOr(result);
         }
 
+        [HttpGet("CreatorDocs")]
+        public async Task<IActionResult> GetCreatorDocs()
+        {
+            var result = await mediator.Send(new GetCreatorDocsQuery());
+            return HandleErrorOr(result);
+        }
+
         [HttpGet("InsertCreatorAddress")]
         public async Task<IActionResult> InsertCreatorAddress([FromBody] InsertCreatorAddressCommand command)
         {
-            logger.LogInformation("KYC Creator address insert for creator: {CreatorId}", command.CreatorId);
             var result = await mediator.Send(command);
             return HandleErrorOr(result);
         }
@@ -61,7 +66,6 @@ namespace Nudge.Presentation.Controllers.KYC
         [HttpGet("InsertCreatorVerification")]
         public async Task<IActionResult> InsertCreatorVerification([FromBody] InsertCreatorVerificationCommand command)
         {
-            logger.LogInformation("kyc creator verification details sent for creator: {CreatorId}", command.CreatorId);
             var result = await mediator.Send(command);
             return HandleErrorOr(result);
         }

@@ -12,19 +12,19 @@ namespace Nudge.Application.Features.KYC.CreatorInfo.Commands.Insert
     public class CreatorInfoCommandHandler : IRequestHandler<InsertCreatorInfoCommand, ErrorOr<StatusResponse>>
     {
         private readonly IGenericRepository _repo;
-        private readonly ICreatorScopedRequest _scope;
+        private readonly ICreatorContext _context;
 
-        public CreatorInfoCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
+        public CreatorInfoCommandHandler(IGenericRepository repo, ICreatorContext context)
         {
             _repo = repo;
-            _scope = scope;
+            _context = context;
         }
 
         public async Task<ErrorOr<StatusResponse>> Handle(InsertCreatorInfoCommand request, CancellationToken cancellationToken)
         {
             var parameters = new
             {
-                p_creatorid = _scope.CreatorId,
+                p_creatorid = _context.CreatorId,
                 p_fullname = request.FullName?.Trim(),
                 p_dobad = request.DOBAD?.Date,
                 p_dobbs = request.DOBBS?.Trim(),

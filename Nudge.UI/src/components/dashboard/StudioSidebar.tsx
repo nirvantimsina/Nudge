@@ -1,215 +1,201 @@
+// src/components/studio/StudioSidebar.tsx
 "use client";
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useCreator } from "@/src/context/CreatorContext";
 import {
   LayoutDashboard,
-  HeartHandshake,
-  Radio,
-  Sparkles,
-  Landmark,
-  Share2,
-  Settings,
-  HelpCircle,
-  Menu,
+  Coffee,
+  Bell,
+  Award,
   ShieldCheck,
+  Landmark,
+  Scale,
+  Sparkles,
 } from "lucide-react";
 
-interface StudioSidebarProps {
-  user?: {
-    name?: string;
-    userName?: string;
-    avatarUrl?: string;
-    isKycVerified?: boolean;
-  } | null;
-  onVerifyClick?: () => void;
-}
-
-export function StudioSidebar({ user, onVerifyClick }: StudioSidebarProps) {
+export function StudioSidebar() {
   const pathname = usePathname();
+  const { summary, isLoading } = useCreator();
 
-    const studioLinks = [
-      {
-        name: "Overview",
-        href: "/dashboard",
-        icon: LayoutDashboard,
-        active: pathname === "/dashboard",
-      },
-      {
-        name: "Nudges & Tips",
-        href: "/nudges",
-        icon: HeartHandshake,
-        badge: "+64",
-        badgeColor: "bg-secondary-fixed text-on-secondary-fixed",
-        active: pathname === "/nudges",
-      },
-      {
-        name: "Stream Alerts & Overlays",
-        href: "/overlays",
-        icon: Radio,
-        active: pathname === "/overlays",
-      },
-      {
-        name: "Membership Tiers",
-        href: "/tiers",
-        icon: Sparkles,
-        active: pathname === "/tiers",
-      },
-      {
-        name: "Payouts & Tax",
-        href: "/payouts",
-        icon: Landmark,
-        badge: user?.isKycVerified ? undefined : "Hold",
-        badgeColor: "bg-error-container text-on-error-container",
-        active: pathname === "/payouts",
-      },
-      {
-        name: "KYC Verification",
-        href: "/kyc/step-1",
-        icon: ShieldCheck,
-        badge: user?.isKycVerified ? "Verified" : "Pending",
-        badgeColor: user?.isKycVerified 
-          ? "bg-tertiary-fixed text-tertiary" 
-          : "bg-secondary-fixed text-on-secondary-fixed",
-        active: pathname.startsWith("/kyc"),
-      },
-    ];
-  const preferenceLinks = [
+  const displayName = summary?.fullName || summary?.username || "Creator";
+  const avatarUrl = summary?.avatarPhotoUrl || "/images/avatar-placeholder.png";
+  const unreadCount = summary?.unreadNotificationsCount ?? 0;
+  const currentStep = summary?.currentKycStep ?? 1;
+
+  const navItems = [
     {
-      name: "Settings",
-      href: "/dashboard/settings",
-      icon: Settings,
-      active: pathname === "/dashboard/settings",
+      label: "Overview",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+      isActive: pathname === "/dashboard" || pathname === "/",
     },
     {
-      name: "Support & FAQ",
-      href: "/support",
-      icon: HelpCircle,
-      active: pathname === "/support",
+      label: "Nudges & Chiya",
+      href: "/nudges",
+      icon: Coffee,
+      isActive: pathname.startsWith("/nudges"),
+    },
+    {
+      label: "Alerts",
+      href: "/alerts",
+      icon: Bell,
+      badge: unreadCount > 0 ? unreadCount : undefined,
+      isActive: pathname.startsWith("/alerts"),
+    },
+    {
+      label: "Tiers & Perks",
+      href: "/perks",
+      icon: Award,
+      isActive: pathname.startsWith("/perks"),
+    },
+    {
+      label: "KYC Verification",
+      href: `/kyc/step-${currentStep}`,
+      icon: ShieldCheck,
+      stepBadge: `Step ${currentStep}`,
+      isActive: pathname.startsWith("/kyc"),
+    },
+    {
+      label: "Payouts & Bank",
+      href: "/payouts",
+      icon: Landmark,
+      statusBadge: summary?.kycStatus === "verified" ? "Ready" : "Hold",
+      isActive: pathname.startsWith("/payouts"),
     },
   ];
 
   return (
-    <aside className="w-full lg:w-64 shrink-0 bg-surface-container-lowest border-r border-outline-variant/40 flex flex-col justify-between sticky top-0 lg:h-screen z-50 shadow-xs">
-      <div className="flex flex-col h-full">
-        {/* Top: Brand Logo & Studio Tag */}
-        <div className="h-16 px-4 border-b border-outline-variant/30 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center p-1 bg-primary-fixed-dim/40 group-hover:scale-105 transition-transform duration-200">
-              <Image
-                src="/logo.svg"
-                alt="Nudge Logo"
-                width={28}
-                height={28}
-                className="w-full h-full object-contain"
+    <aside className="w-64 border-r border-outline-variant/30 bg-surface-container-lowest/80 backdrop-blur-md flex flex-col justify-between p-4 h-full select-none">
+      <div className="space-y-6">
+        {/* Creator Snapshot Card */}
+        <div className="p-3.5 rounded-2xl bg-surface-container-low/70 border border-outline-variant/40 shadow-xs hover:border-primary/40 transition-all">
+          <div className="flex items-center gap-3">
+            {isLoading ? (
+              <div className="w-11 h-11 rounded-full bg-surface-container-high animate-pulse shrink-0" />
+            ) : (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-11 h-11 rounded-full object-cover border-2 border-primary-container/20 shadow-xs shrink-0"
               />
+            )}
+            <div className="overflow-hidden min-w-0 flex-1">
+              <h3 className="text-xs font-bold text-on-surface truncate leading-snug">
+                {displayName}
+              </h3>
+              <p className="text-[11px] text-on-surface-variant truncate font-medium">
+                @{summary?.username || "creator"}
+              </p>
             </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-headline-md text-[22px] font-bold text-primary tracking-tight">
-                Nudge
-              </span>
-              <span className="text-[10px] text-primary-container bg-primary-fixed px-1.5 py-0.5 rounded font-bold tracking-wider uppercase">
-                Studio
-              </span>
-            </div>
-          </Link>
-          <button className="lg:hidden p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container" type="button">
-            <Menu size={20} />
-          </button>
+          </div>
+
+          <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center justify-between text-[11px]">
+            <span className="text-on-surface-variant font-medium">Payout Status</span>
+            <span
+              className={`font-semibold flex items-center gap-1.5 ${
+                summary?.kycStatus === "verified"
+                  ? "text-tertiary"
+                  : "text-secondary"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  summary?.kycStatus === "verified"
+                    ? "bg-tertiary"
+                    : "bg-secondary animate-pulse"
+                }`}
+              />
+              {summary?.kycStatus === "verified" ? "Verified" : "Verification Hold"}
+            </span>
+          </div>
         </div>
 
-        {/* Categorized Navigation Rail */}
-        <div className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-          <div className="px-2.5 pb-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+        {/* Navigation Section */}
+        <div className="space-y-1.5">
+          <div className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-outline">
             Studio Menu
           </div>
+          <nav className="space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
+                    item.isActive
+                      ? "bg-primary text-on-primary shadow-sm shadow-primary/20"
+                      : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+                  }`}
+                >
+                  <Icon
+                    size={17}
+                    className={`transition-transform duration-150 group-hover:scale-105 shrink-0 ${
+                      item.isActive ? "text-on-primary" : "text-outline"
+                    }`}
+                  />
+                  <span className="truncate">{item.label}</span>
 
-          {studioLinks.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                  item.active
-                    ? "bg-primary-fixed/40 text-primary font-bold"
-                    : "text-on-surface-variant hover:text-primary hover:bg-surface-container"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Icon size={18} />
-                  <span>{item.name}</span>
-                </div>
-                {item.active && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                {item.badge && !item.active && (
-                  <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold uppercase ${item.badgeColor}`}>
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+                  {/* Notification Badge */}
+                  {item.badge !== undefined && (
+                    <span
+                      className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        item.isActive
+                          ? "bg-white text-primary"
+                          : "bg-primary text-on-primary"
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
 
-          <div className="pt-4 px-2.5 pb-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-            Preferences
-          </div>
+                  {/* KYC Step Counter */}
+                  {item.stepBadge && (
+                    <span
+                      className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${
+                        item.isActive
+                          ? "bg-white/20 text-on-primary"
+                          : "bg-primary-fixed text-on-primary-fixed"
+                      }`}
+                    >
+                      {item.stepBadge}
+                    </span>
+                  )}
 
-          {preferenceLinks.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                  item.active
-                    ? "bg-primary-fixed/40 text-primary font-bold"
-                    : "text-on-surface-variant hover:text-primary hover:bg-surface-container"
-                }`}
-              >
-                <Icon size={18} />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
+                  {/* Payout Status Badge */}
+                  {item.statusBadge && (
+                    <span
+                      className={`ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                        item.isActive
+                          ? "bg-white/20 text-on-primary"
+                          : "bg-surface-container-high text-on-surface-variant"
+                      }`}
+                    >
+                      {item.statusBadge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
+      </div>
 
-        {/* Bottom Creator Identity & Quick KYC Callout */}
-        <div className="p-2 border-t border-outline-variant/40 bg-surface-container-low/60 m-2 rounded-xl">
-          <div className="flex items-center gap-2.5 p-1.5">
-            <div className="relative shrink-0">
-              <div className="w-9 h-9 rounded-full bg-primary-fixed text-primary font-bold text-xs flex items-center justify-center ring-2 ring-primary-container/30">
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : "CR"}
-              </div>
-              {!user?.isKycVerified && (
-                <span
-                  className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-secondary-container border border-surface-container-lowest rounded-full"
-                  title="Action required"
-                />
-              )}
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-bold text-on-surface truncate leading-tight">
-                {user?.name || "Creator"}
-              </span>
-              <span className="text-[11px] text-on-surface-variant truncate">
-                @{user?.userName || "creator"}
-              </span>
-            </div>
-          </div>
-          <div className="mt-1 pt-1.5 border-t border-outline-variant/30 flex items-center justify-between text-[11px] px-1.5">
-            <span className="text-secondary font-bold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary-container animate-pulse" />
-              {user?.isKycVerified ? "Verified" : "KYC Incomplete"}
+      {/* Compliance & Trust Card */}
+      <div className="mt-auto pt-4 border-t border-outline-variant/30">
+        <div className="p-3 rounded-2xl bg-surface-container-low/50 border border-outline-variant/30 text-center space-y-1.5">
+          <div className="flex justify-center items-center gap-1.5 text-tertiary">
+            <Scale size={15} />
+            <span className="text-[10px] font-bold tracking-wider uppercase">
+              NRB & IRD Compliant
             </span>
-            <button
-              onClick={onVerifyClick}
-              className="text-primary font-bold hover:underline"
-            >
-              Verify →
-            </button>
           </div>
+          <p className="text-[11px] text-on-surface-variant leading-relaxed">
+            Meets Nepal Rastra Bank payment regulations & TDS requirements.
+          </p>
         </div>
       </div>
     </aside>

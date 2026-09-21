@@ -10,54 +10,57 @@ namespace Nudge.Application.Features.KYC.CreatorDocs.Commands
     public class CreatorDocsCommandHandler : IRequestHandler<InsertCreatorDocsCommand, ErrorOr<StatusResponse>>
     {
         private readonly IGenericRepository _repo;
-        private readonly ICreatorScopedRequest _scope;
-
-        public CreatorDocsCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
+        private readonly ICreatorContext _context;
+    
+        public CreatorDocsCommandHandler(IGenericRepository repo, ICreatorContext context)
         {
             _repo = repo;
-            _scope = scope;
+            _context = context;
         }
 
-        public async Task<ErrorOr<StatusResponse>> Handle(InsertCreatorDocsCommand request, CancellationToken cancellationToken)
-        {
-            var Params = new
-            {
-                p_creatorid = _scope.CreatorId,
-                p_citizenshipid = request.CitizenshipId,
-                p_citizenshipissueddistrict = request.CitizenshipIssuedDistrict,
-                p_citizenshipissueddate = request.CitizenshipIssuedDate,
-                p_nid = request.NID,
-                p_passportid = request.PassportId,
-                p_passportexpirydate = request.PassportExpiryDate?.Date,
-                p_pannumber = request.PANNumber,
-                p_avatarphotourl = request.AvatarPhotoURL,
-                p_idfrontproofurl = request.IdFrontProofURL,
-                p_idbackproofurl = request.IdBackProofURL,
-                p_pandocumenturl = request.PanDocumentURL
-            };
+public async Task<ErrorOr<StatusResponse>> Handle(
+    InsertCreatorDocsCommand request, 
+    CancellationToken cancellationToken)
+{
+    var parameters = new
+    {
+        p_creatorid = _context.CreatorId,
+        p_citizenshipid = request.CitizenshipId,
+        p_citizenshipissueddistrict = request.CitizenshipIssuedDistrict,
+        p_citizenshipissueddate = request.CitizenshipIssuedDate, // string, DateTime?, or DateOnly?
+        p_nid = request.Nid,
+        p_passportid = request.PassportId,
+        p_passportexpirydate = request.PassportExpiryDate,       // null, string, DateTime?, or DateOnly?
+        p_pannumber = request.PanNumber,
+        p_avatarphotourl = request.AvatarPhotoUrl,
+        p_idfrontproofurl = request.IdFrontProofUrl,
+        p_idbackproofurl = request.IdBackProofUrl,
+        p_pandocumenturl = request.PanDocumentUrl
+    };
 
-            const string SQL = @"
-            select * from kyc.insert_creator_Docs(
-                @p_creatorid, 
-                @p_citizenshipid, 
-                @p_citizenshipissueddistrict, 
-                @p_citizenshipissueddate, 
-                @p_nid, 
-                @p_passportid, 
-                @p_passportexpirydate::date, 
-                @p_pannumber, 
-                @p_avatarphotourl, 
-                @p_idfrontproofurl, 
-                @p_idbackproofurl, 
-                @p_pandocumenturl);
-            ";
+    const string sql = @"
+        SELECT * FROM kyc.insert_creator_docs(
+            @p_creatorid::integer,
+            @p_citizenshipid::varchar,
+            @p_citizenshipissueddistrict::varchar,
+            @p_citizenshipissueddate::date,
+            @p_nid::varchar,
+            @p_passportid::varchar,
+            @p_passportexpirydate::date,
+            @p_pannumber::varchar,
+            @p_avatarphotourl::text,
+            @p_idfrontproofurl::text,
+            @p_idbackproofurl::text,
+            @p_pandocumenturl::text
+        );";
 
-            var result = await _repo.QueryFirstOrDefaultAsync<StatusResponse>(
-                SQL,
-                Params,
-                commandType: CommandType.Text);
+    var result = await _repo.QueryFirstOrDefaultAsync<StatusResponse>(
+        sql,
+        parameters,
+        commandType: CommandType.Text
+    );
 
-            return result.ToDbResult();
-        }
+    return result.ToDbResult();
+}
     }
 }

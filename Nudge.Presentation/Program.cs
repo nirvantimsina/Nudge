@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using Nudge.Application.Common.Behaviors;
 using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Helpers;
+using Nudge.Infrastructure.Common;
 using Nudge.Infrastructure.Persistence;
 using Nudge.Infrastructure.Repositories;
 using Nudge.Infrastructure.Services;
@@ -29,6 +30,12 @@ builder.Services.AddScoped<IGenericRepository, GenericRepository>();
 // Register HttpContextAccessor and the Scoped Creator Context
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICreatorContext, CreatorContext>();
+
+// Register Dapper type handlers for DateOnly
+SqlMapper.AddTypeHandler(new DateTimeHandler());
+SqlMapper.AddTypeHandler(new NullableDateTimeHandler());
+SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+SqlMapper.AddTypeHandler(new NullableDateOnlyTypeHandler());
 
 // Register MediatR with the pipeline behavior
 builder.Services.AddMediatR(cfg =>

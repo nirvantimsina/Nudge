@@ -16,6 +16,7 @@ import { NepaliDatePicker } from "@/src/components/common/NepaliDatePicker";
 import Loading from "@/src/app/loading";
 import { Button, InputField, RadioGroup } from "@/src/components/ui";
 import { convertAdToBs, convertBsToAd } from "@/lib/nepali-calendar";
+import { KycStepper } from "@/src/components/kyc/KycStepper";
 
 export default function KycStepOnePage() {
   const router = useRouter();
@@ -120,49 +121,7 @@ export default function KycStepOnePage() {
   return (
     <div className="max-w-5xl w-full mx-auto px-4 lg:px-8 py-8">
       {/* Stepper Navigation */}
-      <div className="mb-8 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-xs">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="flex items-center gap-3 p-2 rounded-xl bg-primary-fixed/30 border-l-4 border-primary">
-            <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs">
-              1
-            </div>
-            <div>
-              <div className="font-bold text-xs text-primary">Personal &amp; Family</div>
-              <div className="text-[10px] text-on-surface-variant">Step 1 of 4 • In Progress</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2 rounded-xl opacity-60">
-            <div className="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">
-              2
-            </div>
-            <div>
-              <div className="font-semibold text-xs text-on-surface">Legal Documents</div>
-              <div className="text-[10px] text-on-surface-variant">Citizenship &amp; PAN</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2 rounded-xl opacity-60">
-            <div className="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">
-              3
-            </div>
-            <div>
-              <div className="font-semibold text-xs text-on-surface">Residential Address</div>
-              <div className="text-[10px] text-on-surface-variant">Municipality &amp; Ward</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2 rounded-xl opacity-60">
-            <div className="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">
-              4
-            </div>
-            <div>
-              <div className="font-semibold text-xs text-on-surface">Channel &amp; Payout</div>
-              <div className="text-[10px] text-on-surface-variant">Bank Verification</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <KycStepper currentStep={1} />
 
       {/* Compliance Callout Banner */}
       <div className="mb-8 p-5 rounded-2xl bg-surface-container-low border border-outline-variant flex flex-col sm:flex-row items-start gap-4">

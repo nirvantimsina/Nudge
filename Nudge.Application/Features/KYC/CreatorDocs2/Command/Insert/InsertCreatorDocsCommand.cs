@@ -9,14 +9,14 @@ namespace Nudge.Application.Features.KYC.CreatorDocs.Commands
     {
         public string? CitizenshipId { get; set; }
         public string? CitizenshipIssuedDistrict { get; set; }
-        public string? CitizenshipIssuedDate { get; set; }
-        public string? NID { get; set; }
+        public DateTime? CitizenshipIssuedDate { get; set; }
+        public string? Nid { get; set; }
         public string? PassportId { get; set; }
         public DateTime? PassportExpiryDate { get; set; }
-        public string? PANNumber { get; set; }
-        public string? AvatarPhotoURL { get; set; }
-        public string? IdFrontProofURL { get; set; }
-        public string? IdBackProofURL { get; set; }
-        public string? PanDocumentURL { get; set; }
+        public string? PanNumber { get; set; }
+        public string? AvatarPhotoUrl { get; set; }
+        public string? IdFrontProofUrl { get; set; }
+        public string? IdBackProofUrl { get; set; }
+        public string? PanDocumentUrl { get; set; }
     }
 }

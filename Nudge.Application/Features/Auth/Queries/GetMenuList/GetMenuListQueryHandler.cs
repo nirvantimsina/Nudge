@@ -1,9 +1,7 @@
 using MediatR;
-using Nudge.Application.Interfaces;
+using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Models.Auth.Response;
-using Nudge.Domain.Models;
 using System.Data;
-using System.Data.Common;
 using Nudge.Shared.Wrappers;
 
 namespace Nudge.Application.Features.Auth.Queries.GetMenuList

@@ -7,6 +7,7 @@ namespace Nudge.Application.Features.KYC.CreatorInfo.Commands.Insert
 {
     public class InsertCreatorInfoCommand : IRequest<ErrorOr<StatusResponse>>
     {
+        public int CreatorId { get; set; }
         public string? FullName { get; set; }
         public DateTime? DOBAD { get; set; }
         public string? DOBBS { get; set; }

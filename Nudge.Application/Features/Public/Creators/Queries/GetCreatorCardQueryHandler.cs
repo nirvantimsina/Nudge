@@ -1,7 +1,7 @@
 using System.Data;
 using ErrorOr;
 using MediatR;
-using Nudge.Application.Interfaces;
+using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Models.Public.Creators.ResponseModel;
 
 namespace Nudge.Application.Features.Public.Creators.Queries.GetCreatorCard;

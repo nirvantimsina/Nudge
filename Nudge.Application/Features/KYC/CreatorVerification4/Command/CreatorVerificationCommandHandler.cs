@@ -1,6 +1,5 @@
 using MediatR;
 using System.Data;
-using Nudge.Shared.Wrappers;
 using Nudge.Domain.Models;
 using ErrorOr;
 using Nudge.Application.Common.Extensions;
@@ -11,19 +10,19 @@ namespace Nudge.Application.Features.KYC.CreatorVerification.Commands
     public class CreatorVerificationCommandHandler : IRequestHandler<InsertCreatorVerificationCommand, ErrorOr<StatusResponse>>
     {
         private readonly IGenericRepository _repo;
-        private readonly ICreatorScopedRequest _scope;
+        private readonly ICreatorContext _context;
 
-        public CreatorVerificationCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
+        public CreatorVerificationCommandHandler(IGenericRepository repo, ICreatorContext context)
         {
             _repo = repo;
-            _scope = scope;
+            _context = context;
         }
 
         public async Task<ErrorOr<StatusResponse>> Handle(InsertCreatorVerificationCommand request, CancellationToken cancellationToken)
         {
             var Params = new
             {
-                p_creatorid = _scope.CreatorId,
+                p_creatorid = _context.CreatorId,
                 p_Verificationid = request.VId,
                 p_primaryplatform = request.PrimaryPlatform,
                 p_channelurl = request.ChannelURL,

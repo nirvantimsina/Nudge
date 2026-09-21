@@ -10,18 +10,18 @@ namespace Nudge.Application.Features.KYC.CreatorAddress.Commands
     public class CreatorAddressCommandHandler : IRequestHandler<InsertCreatorAddressCommand, ErrorOr<StatusResponse>>
     {
         private readonly IGenericRepository _repo;
-        private readonly ICreatorScopedRequest _scope;
-        public CreatorAddressCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
+        private readonly ICreatorContext _context;
+        public CreatorAddressCommandHandler(IGenericRepository repo, ICreatorContext context)
         {
             _repo = repo;
-            _scope = scope;
+            _context = context;
         }
 
         public async Task<ErrorOr<StatusResponse>> Handle(InsertCreatorAddressCommand request, CancellationToken cancellationToken)
         {
             var Params = new
             {
-                p_creatorid = _scope.CreatorId,
+                p_creatorid = _context.CreatorId,
                 p_addressid = request.AddressId,
                 p_premdistrict = request.PermDistrict,
                 p_permmunicipality = request.PermMunicipality,

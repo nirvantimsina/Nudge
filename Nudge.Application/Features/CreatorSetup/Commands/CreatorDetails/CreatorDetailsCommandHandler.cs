@@ -8,19 +8,19 @@ namespace Nudge.Application.Features.CreatorSetup.Commands.CreatorDetails;
 public class CreatorDetailsCommandHandler : IRequestHandler<CreatorDetailsCommand, ApiResponse>
 {
     private readonly IGenericRepository _repo;
-    private readonly ICreatorScopedRequest _scope;
+    private readonly ICreatorContext _context;
 
-    public CreatorDetailsCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
+    public CreatorDetailsCommandHandler(IGenericRepository repo, ICreatorContext context)
     {
         _repo = repo;
-        _scope = scope;
+        _context = context;
     }
 
     public async Task<ApiResponse> Handle(CreatorDetailsCommand request, CancellationToken cancellationToken)
     {
         var Params = new
         {
-            p_userid = _scope.UserId,
+            p_userid = _context.UserId,
             p_platform = request.Platform,
             p_username = request.UserName,
             p_link = request.Link
