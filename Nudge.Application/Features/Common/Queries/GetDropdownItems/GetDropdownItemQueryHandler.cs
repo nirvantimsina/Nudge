@@ -2,8 +2,8 @@ using System.Data;
 using ErrorOr;
 using MediatR;
 using Nudge.Application.Common.Extensions;
-using Nudge.Application.Interfaces;
-using Nudge.Application.Models.Common.Response; // Holds DbDropdownRow
+using Nudge.Application.Common.Interfaces;
+using Nudge.Application.Models.Common.Response;
 using Nudge.Shared.Models;
 
 namespace Nudge.Application.Features.Common.Queries.GetDropdownItems;

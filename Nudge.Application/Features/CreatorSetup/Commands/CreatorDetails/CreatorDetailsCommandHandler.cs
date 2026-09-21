@@ -1,24 +1,26 @@
 using MediatR;
-using Nudge.Application.Interfaces;
 using System.Data;
 using Nudge.Shared.Wrappers;
+using Nudge.Application.Common.Interfaces;
 
 namespace Nudge.Application.Features.CreatorSetup.Commands.CreatorDetails;
 
 public class CreatorDetailsCommandHandler : IRequestHandler<CreatorDetailsCommand, ApiResponse>
 {
     private readonly IGenericRepository _repo;
+    private readonly ICreatorScopedRequest _scope;
 
-    public CreatorDetailsCommandHandler(IGenericRepository repo)
+    public CreatorDetailsCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
     {
         _repo = repo;
+        _scope = scope;
     }
 
     public async Task<ApiResponse> Handle(CreatorDetailsCommand request, CancellationToken cancellationToken)
     {
         var Params = new
         {
-            p_userid = request.UserID,
+            p_userid = _scope.UserId,
             p_platform = request.Platform,
             p_username = request.UserName,
             p_link = request.Link

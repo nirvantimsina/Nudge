@@ -1,12 +1,14 @@
 using Dapper;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Nudge.Application.Common.Behaviors;
+using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Helpers;
-using Nudge.Application.Interfaces;
-using Nudge.Application.Models.Public.Creators.ResponseModel;
 using Nudge.Infrastructure.Persistence;
 using Nudge.Infrastructure.Repositories;
+using Nudge.Infrastructure.Services;
 using Nudge.Presentation.Middleware;
 using Scalar.AspNetCore;
 using System.Text;
@@ -23,6 +25,18 @@ builder.Services.AddSingleton<JWTHelper>();
 // Services
 builder.Services.AddSingleton<PermissionService>();
 builder.Services.AddScoped<IGenericRepository, GenericRepository>();
+
+// Register HttpContextAccessor and the Scoped Creator Context
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICreatorContext, CreatorContext>();
+
+// Register MediatR with the pipeline behavior
+builder.Services.AddMediatR(cfg =>
+{
+    // Point to any type inside Nudge.Application
+    cfg.RegisterServicesFromAssembly(typeof(ICreatorContext).Assembly);
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CreatorContextBehavior<,>));
+});
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly));
 

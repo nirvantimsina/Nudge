@@ -1,7 +1,7 @@
 using Dapper;
 using System.Data;
 
-namespace Nudge.Application.Interfaces;
+namespace Nudge.Application.Common.Interfaces;
 
 public interface IGenericRepository
 {

@@ -1,27 +1,27 @@
 using MediatR;
-using Nudge.Application.Interfaces;
 using System.Data;
-using Nudge.Shared.Wrappers;
 using Nudge.Domain.Models;
 using ErrorOr;
 using Nudge.Application.Common.Extensions;
+using Nudge.Application.Common.Interfaces;
 
 namespace Nudge.Application.Features.KYC.CreatorAddress.Commands
 {
     public class CreatorAddressCommandHandler : IRequestHandler<InsertCreatorAddressCommand, ErrorOr<StatusResponse>>
     {
         private readonly IGenericRepository _repo;
-
-        public CreatorAddressCommandHandler(IGenericRepository repo)
+        private readonly ICreatorScopedRequest _scope;
+        public CreatorAddressCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
         {
             _repo = repo;
+            _scope = scope;
         }
 
         public async Task<ErrorOr<StatusResponse>> Handle(InsertCreatorAddressCommand request, CancellationToken cancellationToken)
         {
             var Params = new
             {
-                p_creatorid = request.CreatorId,
+                p_creatorid = _scope.CreatorId,
                 p_addressid = request.AddressId,
                 p_premdistrict = request.PermDistrict,
                 p_permmunicipality = request.PermMunicipality,

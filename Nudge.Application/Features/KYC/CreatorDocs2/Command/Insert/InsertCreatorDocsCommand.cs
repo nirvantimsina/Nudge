@@ -1,12 +1,12 @@
 using ErrorOr;
 using MediatR;
+using Nudge.Application.Common.Interfaces;
 using Nudge.Domain.Models;
 
 namespace Nudge.Application.Features.KYC.CreatorDocs.Commands
 {
     public class InsertCreatorDocsCommand : IRequest<ErrorOr<StatusResponse>>
     {
-        public int? CreatorId { get; set; }
         public string? CitizenshipId { get; set; }
         public string? CitizenshipIssuedDistrict { get; set; }
         public string? CitizenshipIssuedDate { get; set; }

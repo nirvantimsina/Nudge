@@ -1,26 +1,28 @@
 using MediatR;
-using Nudge.Application.Interfaces;
 using System.Data;
 using Nudge.Domain.Models;
 using ErrorOr;
 using Nudge.Application.Common.Extensions;
+using Nudge.Application.Common.Interfaces;
 
 namespace Nudge.Application.Features.KYC.CreatorDocs.Commands
 {
     public class CreatorDocsCommandHandler : IRequestHandler<InsertCreatorDocsCommand, ErrorOr<StatusResponse>>
     {
         private readonly IGenericRepository _repo;
+        private readonly ICreatorScopedRequest _scope;
 
-        public CreatorDocsCommandHandler(IGenericRepository repo)
+        public CreatorDocsCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
         {
             _repo = repo;
+            _scope = scope;
         }
 
         public async Task<ErrorOr<StatusResponse>> Handle(InsertCreatorDocsCommand request, CancellationToken cancellationToken)
         {
             var Params = new
             {
-                p_creatorid = request.CreatorId,
+                p_creatorid = _scope.CreatorId,
                 p_citizenshipid = request.CitizenshipId,
                 p_citizenshipissueddistrict = request.CitizenshipIssuedDistrict,
                 p_citizenshipissueddate = request.CitizenshipIssuedDate,

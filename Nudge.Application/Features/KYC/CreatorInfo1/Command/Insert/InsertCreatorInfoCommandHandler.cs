@@ -1,6 +1,6 @@
 // CreatorInfoCommandHandler.cs
 using MediatR;
-using Nudge.Application.Interfaces;
+using Nudge.Application.Common.Interfaces;
 using System.Data;
 using Nudge.Shared.Wrappers;
 using ErrorOr;
@@ -12,17 +12,19 @@ namespace Nudge.Application.Features.KYC.CreatorInfo.Commands.Insert
     public class CreatorInfoCommandHandler : IRequestHandler<InsertCreatorInfoCommand, ErrorOr<StatusResponse>>
     {
         private readonly IGenericRepository _repo;
+        private readonly ICreatorScopedRequest _scope;
 
-        public CreatorInfoCommandHandler(IGenericRepository repo)
+        public CreatorInfoCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
         {
             _repo = repo;
+            _scope = scope;
         }
 
         public async Task<ErrorOr<StatusResponse>> Handle(InsertCreatorInfoCommand request, CancellationToken cancellationToken)
         {
             var parameters = new
             {
-                p_creatorid = request.CreatorId,
+                p_creatorid = _scope.CreatorId,
                 p_fullname = request.FullName?.Trim(),
                 p_dobad = request.DOBAD?.Date,
                 p_dobbs = request.DOBBS?.Trim(),

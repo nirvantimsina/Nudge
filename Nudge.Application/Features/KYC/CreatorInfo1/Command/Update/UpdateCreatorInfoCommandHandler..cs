@@ -2,30 +2,32 @@ using System.Data;
 using ErrorOr;
 using MediatR;
 using Nudge.Application.Common.Extensions;
-using Nudge.Application.Interfaces;
+using Nudge.Application.Common.Interfaces;
 using Nudge.Domain.Models;
 
 namespace Nudge.Application.Features.Public.Creators.CreatorInfo.Commands.Update;
 
-public record UpdateCreatorInfoCommand(
-    int? CreatorId,
-    string FullName,
-    DateTime DobAd,
-    string? DobBs,
-    string? Gender,
-    string? FatherName,
-    string? MotherName,
-    string? GrandfatherName,
-    string? SpouseName
-) : IRequest<ErrorOr<StatusResponse>>;
+public class UpdateCreatorInfoCommand : IRequest<ErrorOr<StatusResponse>>
+{
+    public string FullName { get; set; } = string.Empty;
+    public DateTime DobAd { get; set; }
+    public string? DobBs { get; set; }
+    public int? Gender { get; set; }
+    public string? FatherName { get; set; }
+    public string? MotherName { get; set; }
+    public string? GrandfatherName { get; set; }
+    public string? SpouseName { get; set; }
+}
 
 public class UpdateCreatorInfoCommandHandler : IRequestHandler<UpdateCreatorInfoCommand, ErrorOr<StatusResponse>>
 {
     private readonly IGenericRepository _repo;
+    private readonly ICreatorScopedRequest _scope;
 
-    public UpdateCreatorInfoCommandHandler(IGenericRepository repo)
+    public UpdateCreatorInfoCommandHandler(IGenericRepository repo, ICreatorScopedRequest scope)
     {
         _repo = repo;
+        _scope = scope;
     }
 
     public async Task<ErrorOr<StatusResponse>> Handle(UpdateCreatorInfoCommand request, CancellationToken cancellationToken)
@@ -33,7 +35,7 @@ public class UpdateCreatorInfoCommandHandler : IRequestHandler<UpdateCreatorInfo
         var result = await _repo.QueryFirstOrDefaultAsync<StatusResponse>(
             "SELECT * FROM kyc.update_creator_info(@p_creatorid, @p_fullname, @p_dobad, @p_dobbs, @p_gender, @p_fathername, @p_mothername, @p_grandfathername, @p_spousename);",
             new {
-                p_creatorid = request.CreatorId,
+                p_creatorid = _scope.CreatorId,
                 p_fullname = request.FullName,
                 p_dobad = request.DobAd,
                 p_dobbs = request.DobBs,
