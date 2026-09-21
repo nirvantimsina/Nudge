@@ -171,8 +171,7 @@ Follow this structure when building them:
 ```
 src/app/
   (auth)/                   ← route group, doesn't affect the URL
-    login/page.tsx          → /login
-    signup/page.tsx         → /signup
+    /page.tsx               → /auth
     layout.tsx              ← shared centered-card layout for just these two
   creators/
     [slug]/page.tsx         → /creators/sisan-baniya (dynamic route)

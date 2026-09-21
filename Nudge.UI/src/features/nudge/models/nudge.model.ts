@@ -1,38 +1,42 @@
+export interface ApiResponse<T> {
+  data: T;
+  status: string;
+  msg: string;
+}
+
 export interface NudgeCreator {
-  id: string;
+  id: number;
   slug: string;
   name: string;
-  firstname: string;
+  firstName: string;
   bio: string;
   avatar: string;
   isVerified: boolean;
   tiers: NudgeTier[];
-  recentnudge: RecentNudge | null;
+  recentNudge: RecentNudge | null;
 }
 
 export interface NudgeTier {
-  id: string;
+  id: number;
   label: string;
   amount: number;
   note: string;
 }
 
 export interface RecentNudge {
-  displayname: string;
+  displayName: string;
   amount: number;
   message: string;
   createdAt: string;
-  nudgetype: string;
+  nudgeType: string;
 }
 
 export interface CreateNudgePayload {
-  creatorid: string;
-  /** Present when the sender picked a preset tier */
-  tierid?: string;
-  /** Present when the sender picked a custom amount instead */
+  creatorId: number | string;
+  tierId?: number | string;
   amount?: number;
-  userid?: number,
-  displayname?: string;
+  userId?: number;
+  displayName?: string;
   message?: string;
 }
 

@@ -29,3 +29,26 @@
 .stream-alert-glow {
   animation: pulse-alert-glow 3s infinite ease-in-out;
 }
+
+html {
+  overscroll-behavior-y: auto; /* Preserves smooth rubber-banding */
+  background-color: var(--surface-container-low, #fcf6eb); /* Matches background behind pull */
+}
+
+/* Only suppress native OS cursor when the custom cursor component has actually mounted */
+@media (pointer: fine) {
+  body.custom-cursor-active,
+  body.custom-cursor-active * {
+    cursor: none !important;
+  }
+}
+
+@media (pointer: coarse) {
+  *,
+  *::before,
+  *::after,
+  html,
+  body {
+    cursor: auto !important;
+  }
+}

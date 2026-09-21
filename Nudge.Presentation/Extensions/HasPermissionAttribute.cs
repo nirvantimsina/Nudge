@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Nudge.Application.Helpers;
 
-namespace Nudge.Presentation.Helpers;
+namespace Nudge.Presentation.Extensions;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public class HasPermissionAttribute : Attribute, IAuthorizationFilter

@@ -2,13 +2,29 @@ import { apiClient } from "@/lib/api-client";
 import type { CreateNudgePayload, CreateNudgeResult, NudgeCreator } from "../models/nudge.model";
 
 export const nudgeService = {
-  /** GET /api/nudge/preview-creators — rotating set shown in the hero widget */
-  getPreviewCreators: () => apiClient.get<NudgeCreator[]>("/nudge/preview-creators"),
+  getPreviewCreators: async (): Promise<NudgeCreator[]> => {
+    // res might be { data: { id: 1, ... } } OR directly { id: 1, ... } depending on apiClient setup
+    const res = await apiClient.get<any>("/PublicAPI/CreatorCard/admin-nudge");
 
-  /** GET /api/creators/{slug}/nudge-profile — used on a creator's own page */
-  getCreatorNudgeProfile: (slug: string) =>
-    apiClient.get<NudgeCreator>(`/creators/${slug}/nudge-profile`),
+    // Extract creator object regardless of apiClient wrapping behavior
+    let creator: NudgeCreator | null = null;
 
-  /** POST /api/nudge — sends a nudge; backend returns a payment redirect URL */
-  createNudge: (payload: CreateNudgePayload) => apiClient.post<CreateNudgePayload, CreateNudgeResult>("/nudge", payload),
+    if (res && typeof res === "object") {
+      if ("data" in res && res.data && typeof res.data === "object" && "id" in res.data) {
+        creator = res.data as NudgeCreator;
+      } else if ("id" in res) {
+        creator = res as NudgeCreator;
+      }
+    }
+
+    return creator ? [creator] : [];
+  },
+
+  getCreatorNudgeProfile: async (slug: string): Promise<NudgeCreator> => {
+    const res = await apiClient.get<any>(`/creators/${slug}/nudge-profile`);
+    return (res?.data ?? res) as NudgeCreator;
+  },
+
+  createNudge: (payload: CreateNudgePayload) =>
+    apiClient.post<CreateNudgePayload, CreateNudgeResult>("/nudge", payload),
 };
