@@ -8,7 +8,7 @@ using Nudge.Domain.Models;
 namespace Nudge.Application.Features.Public.Creators.CreatorInfo.Commands.Update;
 
 public record UpdateCreatorInfoCommand(
-    int CreatorId,
+    int? CreatorId,
     string FullName,
     DateTime DobAd,
     string? DobBs,

@@ -14,6 +14,7 @@ import {
   Settings,
   HelpCircle,
   Menu,
+  ShieldCheck,
 } from "lucide-react";
 
 interface StudioSidebarProps {
@@ -29,49 +30,52 @@ interface StudioSidebarProps {
 export function StudioSidebar({ user, onVerifyClick }: StudioSidebarProps) {
   const pathname = usePathname();
 
-  const studioLinks = [
-    {
-      name: "Overview",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-      active: pathname === "/dashboard",
-    },
-    {
-      name: "Nudges & Tips",
-      href: "/dashboard/nudges",
-      icon: HeartHandshake,
-      badge: "+64",
-      badgeColor: "bg-secondary-fixed text-on-secondary-fixed",
-      active: pathname === "/dashboard/nudges",
-    },
-    {
-      name: "Stream Alerts & Overlays",
-      href: "/dashboard/overlays",
-      icon: Radio,
-      active: pathname === "/dashboard/overlays",
-    },
-    {
-      name: "Membership Tiers",
-      href: "/dashboard/tiers",
-      icon: Sparkles,
-      active: pathname === "/dashboard/tiers",
-    },
-    {
-      name: "Payouts & Tax",
-      href: "#verification-steps-card",
-      icon: Landmark,
-      badge: "Hold",
-      badgeColor: "bg-error-container text-on-error-container",
-      active: pathname === "/dashboard/payouts",
-    },
-    {
-      name: "Nudge Loom (Bio)",
-      href: "/dashboard/loom",
-      icon: Share2,
-      active: pathname === "/dashboard/loom",
-    },
-  ];
-
+    const studioLinks = [
+      {
+        name: "Overview",
+        href: "/dashboard",
+        icon: LayoutDashboard,
+        active: pathname === "/dashboard",
+      },
+      {
+        name: "Nudges & Tips",
+        href: "/nudges",
+        icon: HeartHandshake,
+        badge: "+64",
+        badgeColor: "bg-secondary-fixed text-on-secondary-fixed",
+        active: pathname === "/nudges",
+      },
+      {
+        name: "Stream Alerts & Overlays",
+        href: "/overlays",
+        icon: Radio,
+        active: pathname === "/overlays",
+      },
+      {
+        name: "Membership Tiers",
+        href: "/tiers",
+        icon: Sparkles,
+        active: pathname === "/tiers",
+      },
+      {
+        name: "Payouts & Tax",
+        href: "/payouts",
+        icon: Landmark,
+        badge: user?.isKycVerified ? undefined : "Hold",
+        badgeColor: "bg-error-container text-on-error-container",
+        active: pathname === "/payouts",
+      },
+      {
+        name: "KYC Verification",
+        href: "/kyc/step-1",
+        icon: ShieldCheck,
+        badge: user?.isKycVerified ? "Verified" : "Pending",
+        badgeColor: user?.isKycVerified 
+          ? "bg-tertiary-fixed text-tertiary" 
+          : "bg-secondary-fixed text-on-secondary-fixed",
+        active: pathname.startsWith("/kyc"),
+      },
+    ];
   const preferenceLinks = [
     {
       name: "Settings",

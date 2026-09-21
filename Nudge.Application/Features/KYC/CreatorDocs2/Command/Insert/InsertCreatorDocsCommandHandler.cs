@@ -26,7 +26,7 @@ namespace Nudge.Application.Features.KYC.CreatorDocs.Commands
                 p_citizenshipissueddate = request.CitizenshipIssuedDate,
                 p_nid = request.NID,
                 p_passportid = request.PassportId,
-                p_passportexpirydate = request.PassportExpiryDate,
+                p_passportexpirydate = request.PassportExpiryDate?.Date,
                 p_pannumber = request.PANNumber,
                 p_avatarphotourl = request.AvatarPhotoURL,
                 p_idfrontproofurl = request.IdFrontProofURL,
@@ -34,8 +34,24 @@ namespace Nudge.Application.Features.KYC.CreatorDocs.Commands
                 p_pandocumenturl = request.PanDocumentURL
             };
 
+            const string SQL = @"
+            select * from kyc.insert_creator_Docs(
+                @p_creatorid, 
+                @p_citizenshipid, 
+                @p_citizenshipissueddistrict, 
+                @p_citizenshipissueddate, 
+                @p_nid, 
+                @p_passportid, 
+                @p_passportexpirydate::date, 
+                @p_pannumber, 
+                @p_avatarphotourl, 
+                @p_idfrontproofurl, 
+                @p_idbackproofurl, 
+                @p_pandocumenturl);
+            ";
+
             var result = await _repo.QueryFirstOrDefaultAsync<StatusResponse>(
-                "select kyc.insert_creator_Docs(@p_creatorid, @p_citizenshipid, @p_citizenshipissueddistrict, @p_citizenshipissueddate, @p_nid, @p_passportid, @p_passportexpirydate, @p_pannumber, @p_avatarphotourl, @p_idfrontproofurl, @p_idbackproofurl, @p_pandocumenturl)",
+                SQL,
                 Params,
                 commandType: CommandType.Text);
 

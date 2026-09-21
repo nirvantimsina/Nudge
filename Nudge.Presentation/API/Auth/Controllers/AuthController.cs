@@ -57,16 +57,14 @@ namespace Nudge.Presentation.Controllers
         [HttpGet("Me")]
         public IActionResult GetCurrentUserSession()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User.Identity?.Name;
-            var role = CurrentRoleId;
-
-            return Ok(ApiResponse.Ok(data: new 
-            { 
-                UserId = userId, 
-                UserName = userName, 
-                RoleId = role 
-            }, message: "User session active."));
+            return Ok(ApiResponse<object>.Ok(new
+            {
+                userId = CurrentUserId,
+                userName = CurrentUserName,
+                roleId = CurrentRoleId,
+                creatorId = CurrentCreatorId, // Reads "creatorid" claim from ApiBaseController
+                permissions = CurrentPermissions
+            }));
         }
 
         [HttpGet("MenuList")]

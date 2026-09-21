@@ -3,7 +3,7 @@ export interface CreatorInfoDTO {
   fullName: string;
   dobAD: string; // ISO date string YYYY-MM-DD
   dobBS: string; // Bikram Sambat YYYY-MM-DD
-  gender: "male" | "female" | "other";
+  gender: number;
   fatherName: string;
   motherName: string;
   grandfatherName: string;
@@ -15,7 +15,7 @@ export interface CreatorInfoResponse {
   fullName: string;
   dobAD: string;
   dobBS: string;
-  gender: string;
+  gender: number;
   fatherName: string;
   motherName: string;
   grandfatherName: string;
