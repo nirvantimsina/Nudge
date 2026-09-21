@@ -1,4 +1,4 @@
-import { apiClient } from "../../../lib/api-client";
+import { apiClient } from "../../../../lib/api-client";
 import { LoginRequest, UserAuthData } from "@/src/features/auth/models/auth-models";
 
 export const authService = {

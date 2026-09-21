@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ApiServerError } from "@/src/lib/api-client";
+import { ApiServerError } from "@/lib/api-client";
 import type { Creator, CreatorCategory } from "../models/creator.model";
 import { creatorService } from "../services/creator.service";
 

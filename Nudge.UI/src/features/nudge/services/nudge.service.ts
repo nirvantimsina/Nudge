@@ -1,4 +1,4 @@
-import { apiClient } from "@/src/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 import type { CreateNudgePayload, CreateNudgeResult, NudgeCreator } from "../models/nudge.model";
 
 export const nudgeService = {

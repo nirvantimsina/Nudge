@@ -15,27 +15,22 @@ namespace Nudge.Presentation.Controllers
         {
             get
             {
-                var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
                 return int.TryParse(claimValue, out var id) ? id : 0;
             }
         }
 
-        protected string? CurrentUserName
-        {
-            get
-            {
-                var claimValue = User.FindFirstValue(ClaimTypes.Name);
-                return claimValue ?? string.Empty;
-            }
-        }
+        protected string CurrentUserName => User.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
+
         protected int CurrentRoleId
         {
             get
             {
-                var claimValue = User.FindFirstValue(ClaimTypes.Role);
+                var claimValue = User.FindFirstValue(ClaimTypes.Role) ?? User.FindFirstValue("role");
                 return int.TryParse(claimValue, out var roleid) ? roleid : 0;
             }
         }
+
         protected IActionResult HandleResponse(ApiResponse result)
         {
             if (result == null)
@@ -52,19 +47,17 @@ namespace Nudge.Presentation.Controllers
                 data => Ok(ApiResponse<T>.Ok(data)),
                 errors => {
                     var firstError = errors.First();
-                    // You can map specific ErrorOr types to correct HTTP Status Codes here
-                    return firstError.Type == ErrorType.NotFound 
-                        ? NotFound(ApiResponse.Fail(firstError.Description, firstError.Code))
-                        : BadRequest(ApiResponse.Fail(firstError.Description, firstError.Code));
+
+                    return firstError.Type switch
+                    {
+                        ErrorType.NotFound => NotFound(ApiResponse.Fail(firstError.Description, firstError.Code)),
+                        ErrorType.Conflict => Conflict(ApiResponse.Fail(firstError.Description, firstError.Code)),
+                        ErrorType.Validation => BadRequest(ApiResponse.Fail(firstError.Description, firstError.Code)),
+                        ErrorType.Unauthorized => Unauthorized(ApiResponse.Fail(firstError.Description, firstError.Code)),
+                        _ => BadRequest(ApiResponse.Fail(firstError.Description, firstError.Code))
+                    };
                 }
             );
         }
     }
 }
-
-
-
-
-
-
-
