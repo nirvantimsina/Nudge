@@ -4,7 +4,6 @@ namespace Nudge.Application.Models.KYC.ResponseModel.CreatorInfo;
 
 public class CreatorInfoResponseModel : StatusResponse
 {
-    public int CreatorId { get; set; }
     public string FullName { get; set; } = null!;
     public DateTime? DobAd { get; set; }
     public string? DobBs { get; set; }

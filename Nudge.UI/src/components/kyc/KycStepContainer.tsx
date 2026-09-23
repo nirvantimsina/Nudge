@@ -16,17 +16,18 @@ import {
 
 interface KycStepContainerProps {
   currentStep: 1 | 2 | 3 | 4;
+  isVerified?: boolean;     // True ONLY when approved (status 1)
+  isLocked?: boolean;       // True when verified OR submitted for review (status 1 or 5)
   bannerTitle: string;
-  bannerBadge?: string;
+  bannerBadge: string;
   bannerDescription: string;
   errorMessage?: string | null;
   isSubmitting?: boolean;
-  isVerified?: boolean;
   backHref?: string;
   nextHref?: string;
   nextLabel?: string;
   onSaveDraft?: () => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit?: (e: React.FormEvent) => void;
   children: React.ReactNode;
 }
 
@@ -38,6 +39,7 @@ export function KycStepContainer({
   errorMessage,
   isSubmitting = false,
   isVerified = false,
+  isLocked = false,
   backHref,
   nextHref,
   nextLabel = `Save & Proceed to Step ${currentStep + 1}`,
@@ -88,6 +90,19 @@ export function KycStepContainer({
               {bannerDescription}
             </p>
           </div>
+        </div>
+      )}
+{isLocked && !isVerified && (
+        <div className="mb-6 p-4 rounded-2xl bg-surface-container-high border border-outline-variant flex items-center justify-between text-xs text-on-surface">
+          <div>
+            <span className="font-bold">Application Under Review</span>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">
+              Your application has been submitted and is currently under review. Editing is temporarily disabled.
+            </p>
+          </div>
+          <span className="text-[11px] font-semibold bg-surface-container-highest px-2.5 py-1 rounded-full">
+            Read-Only
+          </span>
         </div>
       )}
 

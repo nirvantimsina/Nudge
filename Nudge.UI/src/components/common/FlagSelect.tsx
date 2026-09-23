@@ -1,4 +1,3 @@
-// src/components/common/FlagSelect.tsx
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
@@ -10,8 +9,8 @@ export interface DropdownItem {
 }
 
 interface FlagSelectProps {
-  flag?: string;                           // Optional when `items` is provided
-  items?: DropdownItem[];                  // Pass static/client JSON items directly
+  flag?: string;                            // Optional when `items` is provided
+  items?: DropdownItem[];                   // Pass static/client JSON items directly
   value: string | null | undefined;
   onChange: (val: string) => void;
   placeholder?: string;
@@ -101,20 +100,34 @@ export function FlagSelect({
     <div ref={dropdownRef} className="relative w-full">
       <div
         role="button"
-        tabIndex={0}
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled}
         onClick={() => !disabled && !loading && setIsOpen((prev) => !prev)}
         onKeyDown={(e) => {
           if ((e.key === "Enter" || e.key === " ") && !disabled && !loading) {
+            e.preventDefault();
             setIsOpen((prev) => !prev);
           }
         }}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-surface-container-lowest border rounded-xl text-xs transition-all shadow-xs cursor-pointer select-none ${
-          isOpen
-            ? "border-primary ring-2 ring-primary/20"
-            : "border-outline-variant hover:border-primary/50"
-        } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all select-none ${
+          disabled
+            ? "bg-surface-container-low/70 border border-outline-variant/60 text-on-surface/70 cursor-not-allowed shadow-none"
+            : isOpen
+            ? "bg-surface-container-lowest border border-primary ring-2 ring-primary/20 cursor-pointer shadow-xs"
+            : "bg-surface-container-lowest border border-outline-variant hover:border-primary/50 cursor-pointer shadow-xs"
+        }`}
       >
-        <span className={selectedItem ? "text-on-surface font-semibold truncate" : "text-outline truncate"}>
+        <span
+          className={`truncate ${
+            disabled
+              ? "text-on-surface/70 font-semibold"
+              : selectedItem
+              ? "text-on-surface font-semibold"
+              : value
+              ? "text-on-surface font-semibold"
+              : "text-on-surface-variant/50"
+          }`}
+        >
           {selectedItem ? selectedItem.label : value ? value : placeholder}
         </span>
 
@@ -124,18 +137,22 @@ export function FlagSelect({
           ) : (
             <ChevronDown
               size={14}
-              className={`text-on-surface-variant transition-transform duration-200 ${
-                isOpen ? "rotate-180 text-primary" : ""
+              className={`transition-transform duration-200 ${
+                disabled
+                  ? "text-on-surface-variant/40"
+                  : isOpen
+                  ? "rotate-180 text-primary"
+                  : "text-on-surface-variant"
               }`}
             />
           )}
         </div>
       </div>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute top-full left-0 mt-1 z-50 w-full max-h-60 overflow-y-auto bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-xl py-1 text-xs custom-scrollbar">
           {items.length === 0 ? (
-            <div className="px-3 py-2 text-outline text-center">No options available</div>
+            <div className="px-3 py-2 text-on-surface-variant/60 text-center">No options available</div>
           ) : (
             items.map((item, index) => {
               const isSelected = item.id === value || item.label === value;

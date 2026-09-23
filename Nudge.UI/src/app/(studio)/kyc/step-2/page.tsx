@@ -15,6 +15,7 @@ import {
   UploadCloud,
   FileCheck,
   Image,
+  Clock
 } from "lucide-react";
 import { KycStepContainer } from "@/src/components/kyc/KycStepContainer";
 import { useCreator } from "@/src/context/CreatorContext"
@@ -22,8 +23,8 @@ import { DocumentUploader } from "@/src/components/common/DocumentUploader";
 
 export default function KycStepTwoPage() {
   const router = useRouter();
-  const { summary } = useCreator();
-  const isVerified = summary?.kycStatus === "verified";
+  const { summary, isLocked, refreshSummary } = useCreator();
+  const isVerified = summary?.isVerified ?? false;
 
   const [formData, setFormData] = useState({
     citizenshipId: "",
@@ -160,6 +161,8 @@ export default function KycStepTwoPage() {
           result.status === true ||
           result.statusCode === 200);
 
+      await refreshSummary();
+
       if (isSuccess) {
         toast.success(proceedToStep3 ? "Legal documents saved!" : "Draft saved successfully.");
         if (proceedToStep3) {
@@ -183,6 +186,7 @@ export default function KycStepTwoPage() {
     <KycStepContainer
       currentStep={2}
       isVerified={isVerified}
+      isLocked={isLocked}
       bannerTitle="Inland Revenue Department &amp; NRB Compliance"
       bannerBadge="Income Tax Act 2058"
       bannerDescription="As per Nepal tax regulations, digital creators receiving tips, dakshina, and patronage are subject to a 1% advance Tax Deducted at Source (TDS). Your 9-digit PAN and Nepali Citizenship credentials must be verified before payouts can clear."
@@ -192,7 +196,8 @@ export default function KycStepTwoPage() {
       onSaveDraft={() => handleSubmit(undefined, false)}
       onSubmit={(e) => handleSubmit(e, true)}
     >
-      <div className="max-w-5xl w-full mx-auto px-4 lg:px-8 py-8">
+      <div className="space-y-6">
+        {/* Lock / Review Alert */}
         {errorMsg && (
           <div className="mb-6 p-4 rounded-xl bg-error-container/60 border border-error/30 text-on-error-container text-xs flex items-center gap-2">
             <AlertCircle size={16} className="text-error shrink-0" />
@@ -201,10 +206,11 @@ export default function KycStepTwoPage() {
         )}
 
         {/* Form Surface (Exact same sleek input fields & layout as Step 1) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 space-y-6">
+        <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-xs space-y-6">
             <InputField
               label="Permanent Account Number (PAN)"
               isRequired
+              disabled={isLocked}
               placeholder="e.g. 601234567"
               value={formData.panNumber}
               onChange={(e) => {
@@ -219,6 +225,7 @@ export default function KycStepTwoPage() {
             <InputField
               label="National Identity Card (NID)"
               placeholder="e.g. 123-456-7890"
+              disabled={isLocked}
               value={formData.nid}
               onChange={handleChange}
               name="nid"
@@ -226,10 +233,11 @@ export default function KycStepTwoPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-xs grid grid-cols-1 md:grid-cols-3 gap-4">
             <InputField
               label="Citizenship Certificate Number (नागरिकता नं.)"
               isRequired
+              disabled={isLocked}
               placeholder="e.g. 27-01-75-01234"
               value={formData.citizenshipId}
               onChange={handleChange}
@@ -241,6 +249,7 @@ export default function KycStepTwoPage() {
             <InputField
               label="Citizenship Issued District (जारी जिल्ला)"
               isRequired
+              disabled={isLocked}
               placeholder="e.g. Kathmandu, Kaski, Morang"
               value={formData.citizenshipIssuedDistrict}
               onChange={handleChange}
@@ -251,6 +260,7 @@ export default function KycStepTwoPage() {
             <InputField
               label="Citizenship Issue Date (जारी मिति)"
               isRequired
+              disabled={isLocked}
               type="date"
               value={formData.citizenshipIssuedDate}
               onChange={handleChange}
@@ -259,10 +269,11 @@ export default function KycStepTwoPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-xs grid grid-cols-1 md:grid-cols-3 gap-4">
             <InputField
               label="International Passport Number (राहदानी नं.)"
               placeholder="e.g. PA1234567"
+              disabled={isLocked}
               value={formData.passportId}
               onChange={handleChange}
               name="passportId"
@@ -272,6 +283,7 @@ export default function KycStepTwoPage() {
             <InputField
               label="Passport Expiry Date"
               type="date"
+              disabled={isLocked}
               value={formData.passportExpiryDate}
               onChange={handleChange}
               name="passportExpiryDate"
@@ -310,40 +322,6 @@ export default function KycStepTwoPage() {
               ))}
             </div>
           </div>
-
-          {/* Footer Actions (Exact same Button components as Step 1) */}
-          {/* <div className="flex items-center justify-between pt-4 border-t border-outline-variant">
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                leftIcon={<ArrowLeft size={15} />}
-                disabled={isSubmitting}
-                onClick={() => router.push("/kyc/step-1")}
-              >
-                Back to Step 1
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                leftIcon={<Save size={15} />}
-                disabled={isSubmitting}
-                onClick={(e) => handleSubmit(e, false)}
-              >
-                Save Draft
-              </Button>
-            </div>
-
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
-              loadingText="Saving Documents..."
-              rightIcon={<ArrowRight size={16} />}
-            >
-              Save &amp; Proceed to Step 3
-            </Button>
-          </div> */}
       </div>
     </KycStepContainer>
   );

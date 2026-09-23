@@ -8,7 +8,7 @@ import React, {
   useCallback,
 } from "react";
 
-export type KycStatus = "pending" | "verified" | "rejected";
+export type KycStatus = "pending" | "verified" | "rejected" | "submitted";
 
 export interface CreatorSummary {
   creatorId: number;
@@ -29,9 +29,11 @@ export interface CreatorSummary {
   kycCompletionPercentage: number;
 
   // Verification codes & compliance
-  kycStatusCode: number; // 1 = verified, 2 = pending, 3 = rejected
+  kycStatusCode: number; // 1 = verified, 2 = pending, 4 = rejected, 5 = submitted
   kycStatus: KycStatus;
   isVerified: boolean;
+  isSubmitted: boolean;
+  isLocked: boolean; // Derived: true if verified OR submitted
   rejectionReason: string | null;
   verifiedAt: string | null;
 
@@ -42,29 +44,37 @@ export interface CreatorSummary {
 interface CreatorContextType {
   summary: CreatorSummary | null;
   isLoading: boolean;
+  isLocked: boolean; // Direct convenience access
   refreshSummary: () => Promise<void>;
   updateLocalKycProgress: (nextStep: number, percentage: number) => void;
 }
 
 const CreatorContext = createContext<CreatorContextType | undefined>(undefined);
 
-// Normalizes PostgreSQL / ASP.NET casing quirks
 function normalizeSummary(raw: any): CreatorSummary {
-  // Check boolean flag first, fallback to numeric status code 1 (verified)
+  const statusCode = Number(raw.kycStatusCode ?? raw.kycstatus_code ?? 2);
+
+  // Status mapping
   const isVerified: boolean =
     raw.isVerified ??
     raw.is_verified ??
-    (raw.kycStatusCode !== undefined ? raw.kycStatusCode === 1 : undefined) ??
-    (raw.kycstatus_code !== undefined ? raw.kycstatus_code === 1 : undefined) ??
-    false;
+    statusCode === 1;
 
-  const rawStatus = String(raw.kycStatus ?? raw.kyc_status ?? "pending").toLowerCase();
-  const kycStatus: KycStatus =
-    rawStatus === "verified" || isVerified
-      ? "verified"
-      : rawStatus === "rejected"
-      ? "rejected"
-      : "pending";
+  const rawStatus = String(raw.kycStatus ?? raw.kyc_status ?? "").toLowerCase();
+
+  let kycStatus: KycStatus = "pending";
+  if (rawStatus === "verified" || statusCode === 1) {
+    kycStatus = "verified";
+  } else if (rawStatus === "submitted" || statusCode === 5) {
+    kycStatus = "submitted";
+  } else if (rawStatus === "rejected" || statusCode === 4) {
+    kycStatus = "rejected";
+  }
+
+  const isSubmitted = kycStatus === "submitted" || statusCode === 5;
+  
+  // Forms lock down when submitted for review OR already approved
+  const isLocked = isVerified || isSubmitted;
 
   return {
     creatorId: Number(raw.creatorId ?? raw.creatorid ?? 0),
@@ -82,9 +92,11 @@ function normalizeSummary(raw: any): CreatorSummary {
     currentKycStep: Number(raw.currentKycStep ?? raw.current_kyc_step ?? 0),
     kycCompletionPercentage: Number(raw.kycCompletionPercentage ?? raw.kyc_completion_percentage ?? 0),
 
-    kycStatusCode: Number(raw.kycStatusCode ?? raw.kycstatus_code ?? (isVerified ? 1 : 2)),
+    kycStatusCode: statusCode,
     kycStatus,
     isVerified,
+    isSubmitted,
+    isLocked,
     rejectionReason: raw.rejectionReason ?? raw.rejectionreason ?? null,
     verifiedAt: raw.verifiedAt ?? raw.verifiedat ?? null,
 
@@ -127,7 +139,6 @@ export function CreatorProvider({ children }: { children: React.ReactNode }) {
     fetchSummary();
   }, [fetchSummary]);
 
-  // Optimistic UI progress booster for multi-step transitions
   const updateLocalKycProgress = (nextStep: number, percentage: number) => {
     setSummary((prev) =>
       prev
@@ -148,6 +159,7 @@ export function CreatorProvider({ children }: { children: React.ReactNode }) {
       value={{
         summary,
         isLoading,
+        isLocked: summary?.isLocked ?? false,
         refreshSummary: fetchSummary,
         updateLocalKycProgress,
       }}

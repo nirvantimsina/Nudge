@@ -152,9 +152,9 @@ export function StudioSidebar() {
     },
     {
       label: "KYC Verification",
-      href: `/kyc/step-${currentStep + 1}`,
+      href: `/kyc/step-${currentStep}`,
       icon: ShieldCheck,
-      stepBadge: `Step ${currentStep + 1}`,
+      stepBadge: `Step ${currentStep}`,
       isActive: pathname.startsWith("/kyc"),
     },
     {

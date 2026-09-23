@@ -1,4 +1,3 @@
-// src/components/ui/InputField.tsx
 "use client";
 
 import React, { forwardRef } from "react";
@@ -25,6 +24,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
       rightIcon,
       id,
       className = "",
+      disabled = false,
       ...props
     },
     ref
@@ -44,7 +44,11 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
 
         <div className="relative flex items-center">
           {leftIcon && (
-            <div className="absolute left-3 text-on-surface-variant pointer-events-none">
+            <div
+              className={`absolute left-3 pointer-events-none transition-colors ${
+                disabled ? "text-on-surface-variant/40" : "text-on-surface-variant"
+              }`}
+            >
               {leftIcon}
             </div>
           )}
@@ -52,18 +56,25 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           <input
             ref={ref}
             id={inputId}
-            className={`w-full bg-surface-container-lowest border rounded-xl text-xs text-on-surface transition-all placeholder:text-on-surface-variant/50 focus:outline-none ${
+            disabled={disabled}
+            className={`w-full rounded-xl text-xs transition-all placeholder:text-on-surface-variant/50 focus:outline-none ${
               leftIcon ? "pl-9" : "px-3.5"
             } ${rightIcon ? "pr-9" : "px-3.5"} py-2.5 ${
-              error
-                ? "border-error focus:ring-1 focus:ring-error"
-                : "border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary"
+              disabled
+                ? "bg-surface-container-low/70 border border-outline-variant/60 text-on-surface/70 cursor-not-allowed select-none focus:ring-0 focus:border-outline-variant/60 shadow-none"
+                : error
+                ? "bg-surface-container-lowest border border-error text-on-surface focus:ring-1 focus:ring-error shadow-xs"
+                : "bg-surface-container-lowest border border-outline-variant text-on-surface focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
             } ${className}`}
             {...props}
           />
 
           {rightIcon && (
-            <div className="absolute right-3 text-on-surface-variant flex items-center">
+            <div
+              className={`absolute right-3 flex items-center pointer-events-none transition-colors ${
+                disabled ? "text-on-surface-variant/40" : "text-on-surface-variant"
+              }`}
+            >
               {rightIcon}
             </div>
           )}

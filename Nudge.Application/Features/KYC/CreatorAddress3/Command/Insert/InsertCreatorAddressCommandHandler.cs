@@ -21,19 +21,29 @@ namespace Nudge.Application.Features.KYC.CreatorAddress.Commands.Insert
         {
             var Params = new
             {
-                CreatorId = _context.CreatorId,
-                request.PermDistrict,
-                request.PermMunicipality,
-                request.PermWardNo,
-                request.CurrentAddressLine,
-                request.CurrentDistrict,
-                request.CurrentWard,
-                request.Longitude,
-                request.Latitude
+                p_creatorid = _context.CreatorId,
+                p_permdistrict = request.PermDistrict,
+                p_permmunicipality = request.PermMunicipality,
+                p_permwardno = request.PermWardNo,
+                p_currentaddressline = request.CurrentAddressLine,
+                p_currentdistrict = request.CurrentDistrict,
+                p_currentward = request.CurrentWard,
+                p_longitude = request.Longitude,
+                p_latitude = request.Latitude
             };
 
             var result = await _repo.QueryFirstOrDefaultAsync<StatusResponse>(
-                "SELECT * FROM kyc.insert_creator_address(@CreatorId, @PermDistrict, @PermMunicipality, @PermWardNo, @CurrentAddressLine, @CurrentDistrict, @CurrentWard, @Longitude, @Latitude);",
+                @"SELECT * FROM kyc.insert_creator_address(
+                    @p_creatorid, 
+                    @p_permdistrict, 
+                    @p_permmunicipality, 
+                    @p_permwardno, 
+                    @p_currentaddressline, 
+                    @p_currentdistrict, 
+                    @p_currentward, 
+                    @p_longitude, 
+                    @p_latitude
+                );",
                 Params,
                 commandType: CommandType.Text);
 

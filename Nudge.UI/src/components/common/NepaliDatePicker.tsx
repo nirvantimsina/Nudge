@@ -218,60 +218,80 @@ export function NepaliDatePicker({
 
   const hasValue = Boolean(resolvedDates.finalBS || resolvedDates.finalAD);
 
-  return (
+return (
     <div ref={popoverRef} className="relative w-full">
       {/* 1. Compact Clickable Input Trigger */}
       <div
         role="button"
-        tabIndex={0}
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled}
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
         onKeyDown={(e) => {
           if ((e.key === "Enter" || e.key === " ") && !disabled) {
             setIsOpen((prev) => !prev);
           }
         }}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-surface-container-lowest border rounded-xl text-xs transition-all shadow-xs cursor-pointer select-none ${
-          isOpen
-            ? "border-primary ring-2 ring-primary/20"
-            : "border-outline-variant hover:border-primary/50"
-        } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all select-none ${
+          disabled
+            ? "bg-surface-container-low/70 border border-outline-variant/60 text-on-surface/70 cursor-not-allowed shadow-none"
+            : isOpen
+            ? "bg-surface-container-lowest border border-primary ring-2 ring-primary/20 cursor-pointer shadow-xs"
+            : "bg-surface-container-lowest border border-outline-variant hover:border-primary/50 cursor-pointer shadow-xs"
+        }`}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <CalendarIcon size={16} className="text-primary shrink-0" />
+          <CalendarIcon
+            size={16}
+            className={`shrink-0 ${disabled ? "text-on-surface-variant/40" : "text-primary"}`}
+          />
           {hasValue ? (
             <div className="flex items-center gap-2 font-mono flex-wrap">
               {resolvedDates.finalBS && (
-                <span className="font-bold text-on-surface">{resolvedDates.finalBS} BS</span>
+                <span className={`font-bold ${disabled ? "text-on-surface/75" : "text-on-surface"}`}>
+                  {resolvedDates.finalBS} BS
+                </span>
               )}
               {resolvedDates.finalBS && resolvedDates.finalAD && (
                 <span className="text-outline-variant">/</span>
               )}
               {resolvedDates.finalAD && (
-                <span className="text-on-surface-variant">{resolvedDates.finalAD} AD</span>
+                <span className={disabled ? "text-on-surface-variant/60" : "text-on-surface-variant"}>
+                  {resolvedDates.finalAD} AD
+                </span>
               )}
             </div>
           ) : (
-            <span className="text-on-surface-variant/60">Select birth date (BS / AD)...</span>
+            <span className="text-on-surface-variant/50">Select birth date (BS / AD)...</span>
           )}
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0 ml-2">
           {hasValue && (
-            <span className="text-[10px] font-bold bg-primary-fixed text-primary px-1.5 py-0.5 rounded">
+            <span
+              className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                disabled
+                  ? "bg-surface-container text-on-surface-variant/70"
+                  : "bg-primary-fixed text-primary"
+              }`}
+            >
               Synced
             </span>
           )}
           <ChevronDown
             size={14}
-            className={`text-on-surface-variant transition-transform duration-200 ${
-              isOpen ? "rotate-180 text-primary" : ""
+            className={`transition-transform duration-200 ${
+              disabled
+                ? "text-on-surface-variant/40"
+                : isOpen
+                ? "rotate-180 text-primary"
+                : "text-on-surface-variant"
             }`}
           />
         </div>
       </div>
 
-      {/* 2. Floating Popover Calendar Modal */}
-      {isOpen && (
+      {/* 2. Floating Popover Calendar Modal (Never render if disabled) */}
+      {isOpen && !disabled && (
         <div className="absolute top-full left-0 mt-2 z-50 w-full sm:w-[350px] bg-surface-container-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-4 space-y-3 animate-in fade-in zoom-in-95 duration-150">
           <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
             <div className="flex items-center bg-surface-container-low p-0.5 rounded-lg border border-outline-variant/40">

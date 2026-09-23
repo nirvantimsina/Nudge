@@ -23,7 +23,7 @@ public class GetCreatorInfoQueryHandler : IRequestHandler<GetCreatorInfoQuery, E
     public async Task<ErrorOr<CreatorInfoResponseModel>> Handle(GetCreatorInfoQuery request, CancellationToken cancellationToken)
     {
         var result = await _repo.QueryFirstOrDefaultAsync<CreatorInfoResponseModel>(
-            "SELECT * FROM kyc.get_creator_info_by_id(@p_creatorid);",
+            "SELECT * FROM kyc.get_creator_info_by_creatorid(@p_creatorid);",
             new { p_creatorid = _context.CreatorId },
             commandType: CommandType.Text
         );

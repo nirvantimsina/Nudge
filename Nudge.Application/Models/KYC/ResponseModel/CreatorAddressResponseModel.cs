@@ -4,8 +4,6 @@ namespace Nudge.Application.Models.KYC.ResponseModel;
 
 public class CreatorAddressResponseModel : StatusResponse
 {
-    public int AddressId { get; set; }
-    public int CreatorId { get; set; }
     public string PermDistrict { get; set; } = string.Empty;
     public string PermMunicipality { get; set; } = string.Empty;
     public int PermWardNo { get; set; }
