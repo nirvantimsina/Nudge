@@ -14,18 +14,20 @@ import { kycService } from "@/src/features/kyc/services/kyc.service";
 import { CreatorInfoDTO } from "@/src/features/kyc/types/creator-info.types";
 import { NepaliDatePicker } from "@/src/components/common/NepaliDatePicker";
 import Loading from "@/src/app/loading";
-import { Button, InputField, RadioGroup } from "@/src/components/ui";
-import { convertAdToBs, convertBsToAd } from "@/lib/nepali-calendar";
-import { KycStepper } from "@/src/components/kyc/KycStepper";
+import { InputField, RadioGroup } from "@/src/components/ui";
+import { useCreator } from "@/src/context/CreatorContext";
+import { KycStepContainer } from "@/src/components/kyc/KycStepContainer"
+import { toast } from "@/lib/toast"
 
 export default function KycStepOnePage() {
   const router = useRouter();
-
+  const { summary } = useCreator();
+  const isVerified = summary?.kycStatus === "verified";
   const [formData, setFormData] = useState<CreatorInfoDTO>({
     fullName: "",
     dobAD: "",
     dobBS: "",
-    gender: 1, // Default: 1 (Male)
+    gender: 0, // Default: 1 (Male)
     grandfatherName: "",
     fatherName: "",
     motherName: "",
@@ -75,21 +77,29 @@ export default function KycStepOnePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent, proceedToStep2: boolean = false) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, proceedToNext: boolean = false) => {
+    if (e) e.preventDefault();
     setErrorMsg(null);
 
-    // Basic validation
-    if (
-      !formData.fullName.trim() ||
-      !formData.dobAD ||
-      !formData.dobBS ||
-      !formData.grandfatherName.trim() ||
-      !formData.fatherName.trim() ||
-      !formData.motherName.trim()
-    ) {
-      setErrorMsg("Please fill in all required fields marked with *.");
-      return;
+    // 1. Strict validation ONLY when the user clicks "Save & Proceed"
+    if (proceedToNext) {
+      if (
+        !formData.fullName.trim() ||
+        !formData.dobAD ||
+        !formData.dobBS ||
+        !formData.grandfatherName.trim() ||
+        !formData.fatherName.trim() ||
+        !formData.motherName.trim()
+      ) {
+        toast.error("Please fill in all required fields marked with * to proceed.");
+        return;
+      }
+    } else {
+      // 2. Lenient check for Drafts (require at least a legal name)
+      if (!formData.fullName.trim()) {
+        toast.error("Please enter at least your Full Name before saving a draft.");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -102,13 +112,15 @@ export default function KycStepOnePage() {
 
     try {
       await kycService.saveCreatorInfo(payload);
-      setIsExistingRecord(true);
-
-      if (proceedToStep2) {
+      
+      if (proceedToNext) {
+        toast.success("Personal details saved!");
         router.push("/kyc/step-2");
+      } else {
+        toast.success("Draft saved successfully.");
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || "Failed to save verification details. Please verify your connection.");
+      toast.error(err?.message || "Failed to save details. Please check your connection.");
     } finally {
       setIsSubmitting(false);
     }
@@ -119,35 +131,31 @@ export default function KycStepOnePage() {
   }
 
   return (
+<KycStepContainer
+    currentStep={1}
+    isVerified={isVerified}
+    bannerTitle="Nepal Rastra Bank & IRD Unified Directive"
+    bannerBadge="NRB Directive 2080"
+    bannerDescription="As per NRB digital wallet & patronage guidelines, creators receiving direct patron funds via eSewa, Fonepay, or Khalti must maintain verified three-generation family lineage (Teen Pustey Bibaran) matching your Nepali Citizenship or National ID (Rastriya Parichayapatra)."
+    errorMessage={errorMsg}
+    isSubmitting={isSubmitting}
+    nextLabel="Save & Proceed to Step 2"
+    onSaveDraft={() => handleSubmit(undefined, false)}
+    onSubmit={(e) => handleSubmit(e, true)} // 👈 KycStepContainer's <form> handles this
+  >
     <div className="max-w-5xl w-full mx-auto px-4 lg:px-8 py-8">
-      {/* Stepper Navigation */}
-      <KycStepper currentStep={1} />
-
-      {/* Compliance Callout Banner */}
-      <div className="mb-8 p-5 rounded-2xl bg-surface-container-low border border-outline-variant flex flex-col sm:flex-row items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-tertiary-fixed/60 text-tertiary flex items-center justify-center shrink-0">
-          <FileText size={22} />
-        </div>
-        <div className="flex-1">
+      {isVerified && (
+        <div className="mb-6 p-4 rounded-2xl bg-tertiary-fixed/40 border border-tertiary/30 flex items-center justify-between text-xs text-on-tertiary-fixed">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-on-surface">Nepal Rastra Bank &amp; IRD Unified Directive</h3>
-            <span className="bg-tertiary-fixed text-on-tertiary-fixed font-bold text-[9px] uppercase px-2 py-0.5 rounded">
-              NRB Directive 2080
+            <CheckCircle2 size={16} className="text-tertiary shrink-0" />
+            <span className="font-semibold">
+              Your legal identity documents are verified by Nudge Nepal and locked for compliance.
             </span>
           </div>
-          <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
-            As per NRB digital wallet &amp; patronage guidelines, creators receiving direct patron funds via eSewa, Fonepay, or Khalti must maintain verified three-generation family lineage (<em>Teen Pustey Bibaran</em>) matching your Nepali Citizenship or National ID (Rastriya Parichayapatra).
-          </p>
+          <span className="text-[11px] underline cursor-pointer">Request Change</span>
         </div>
-        <button
-          type="button"
-          onClick={() => alert("Nagarik App QR Sync will open your camera scanner.")}
-          className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-surface-container-lowest border border-primary text-primary hover:bg-primary hover:text-on-primary text-xs font-semibold transition-all shadow-xs"
-        >
-          <QrCode size={15} />
-          <span>Fetch from Nagarik App QR</span>
-        </button>
-      </div>
+      )}
+
 
       {errorMsg && (
         <div className="mb-6 p-4 rounded-xl bg-error-container/60 border border-error/30 text-on-error-container text-xs flex items-center gap-2">
@@ -157,7 +165,7 @@ export default function KycStepOnePage() {
       )}
 
       {/* Form Surface */}
-      <form onSubmit={(e) => handleSubmit(e, true)} className="space-y-6">
+      <div className="space-y-6">
         <InputField
           label="Full Legal Name"
           isRequired
@@ -167,6 +175,7 @@ export default function KycStepOnePage() {
           name="fullName"
           hint="Must match your Nepali Citizenship Card character-for-character."
           rightIcon={formData.fullName.length > 3 ? <CheckCircle2 size={16} className="text-tertiary" /> : undefined}
+          disabled={isVerified}
         />
 
         <div className="space-y-1">
@@ -177,6 +186,7 @@ export default function KycStepOnePage() {
             dobAD={formData.dobAD}
             dobBS={formData.dobBS}
             onDateChange={({ dobAD, dobBS }) => setFormData((prev) => ({ ...prev, dobAD, dobBS }))}
+            disabled={isVerified}
           />
         </div>
 
@@ -191,6 +201,7 @@ export default function KycStepOnePage() {
             { value: "2", label: "Female (महिला)" },
             { value: "3", label: "Other (अन्य)" },
           ]}
+          disabled={isVerified}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -202,6 +213,7 @@ export default function KycStepOnePage() {
             onChange={handleChange}
             name="grandfatherName"
             hint="As recorded on your Father's or your Citizenship document."
+            disabled={isVerified}
           />
           <InputField
             label="Father's Full Name (बुवाको नाम)"
@@ -211,6 +223,7 @@ export default function KycStepOnePage() {
             onChange={handleChange}
             name="fatherName"
             hint="Cross-checked with citizenship records."
+            disabled={isVerified}
           />
           <InputField
             label="Mother's Full Name (आमाको नाम)"
@@ -219,6 +232,7 @@ export default function KycStepOnePage() {
             value={formData.motherName}
             onChange={handleChange}
             name="motherName"
+            disabled={isVerified}
           />
           <InputField
             label="Spouse's Full Name (पति / पत्नीको नाम)"
@@ -227,15 +241,16 @@ export default function KycStepOnePage() {
             onChange={handleChange}
             name="spouseName"
             hint="Optional if unmarried"
+            disabled={isVerified}
           />
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-outline-variant">
+        {/* <div className="flex items-center justify-between pt-4 border-t border-outline-variant">
           <Button
             type="button"
             variant="outline"
             leftIcon={<Save size={15} />}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isVerified}
             onClick={(e) => handleSubmit(e, false)}
           >
             Save Draft
@@ -246,12 +261,14 @@ export default function KycStepOnePage() {
             variant="primary"
             isLoading={isSubmitting}
             loadingText="Saving Record..."
-            rightIcon={<ArrowRight size={16} />}
+            rightIcon={<ArrowRight size={16}/>}
+            disabled={isVerified}
           >
             Save &amp; Proceed to Step 2
           </Button>
-        </div>
-      </form>
+        </div> */}
+      </div>
     </div>
+    </KycStepContainer>
   );
 }

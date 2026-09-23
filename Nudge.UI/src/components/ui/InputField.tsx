@@ -69,13 +69,16 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           )}
         </div>
 
+        {/* Dynamic validation/hint rendering */}
         {error ? (
-          <p className="text-[11px] text-error flex items-center gap-1 mt-1">
-            <AlertCircle size={13} className="shrink-0" />
+          <div className="flex items-center gap-1 text-xs text-error mt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+            <AlertCircle className="w-3 h-3 shrink-0" />
             <span>{error}</span>
-          </p>
+          </div>
         ) : hint ? (
-          <p className="text-[11px] text-on-surface-variant mt-1">{hint}</p>
+          <p className="text-xs text-on-surface-variant/70 mt-1 pl-1">
+            {hint}
+          </p>
         ) : null}
       </div>
     );

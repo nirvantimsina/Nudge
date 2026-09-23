@@ -5,12 +5,13 @@ import React, { useEffect, useState, useRef } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 
 export interface DropdownItem {
-  id: string;      // maps to backend `value`
-  label: string;   // maps to backend `text`
+  id: string;      // maps to value/identifier
+  label: string;   // maps to display text
 }
 
 interface FlagSelectProps {
-  flag: string;
+  flag?: string;                           // Optional when `items` is provided
+  items?: DropdownItem[];                  // Pass static/client JSON items directly
   value: string | null | undefined;
   onChange: (val: string) => void;
   placeholder?: string;
@@ -20,18 +21,26 @@ interface FlagSelectProps {
 
 export function FlagSelect({
   flag,
+  items: controlledItems,
   value,
   onChange,
   placeholder = "Select an option...",
   disabled = false,
   required = false,
 }: FlagSelectProps) {
-  const [items, setItems] = useState<DropdownItem[]>([]);
+  const [fetchedItems, setFetchedItems] = useState<DropdownItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // If controlled items are passed, prioritize them over network fetching
+  const isControlled = Array.isArray(controlledItems);
+  const items = isControlled ? controlledItems : fetchedItems;
+
   useEffect(() => {
+    // Skip API request if items are provided via props or if flag is absent
+    if (isControlled || !flag) return;
+
     let isMounted = true;
 
     const fetchOptions = async () => {
@@ -45,17 +54,15 @@ export function FlagSelect({
 
         if (res.ok) {
           const raw = await res.json();
-          // Supports both direct List<DropdownListModel> and ErrorOr/ApiResponse wrapper
           const list = Array.isArray(raw) ? raw : raw.data || [];
 
-          // Map: text -> label, value -> id (handling both camelCase & PascalCase)
           const normalized: DropdownItem[] = list.map((item: any) => ({
             id: String(item.value ?? item.Value ?? ""),
             label: String(item.text ?? item.Text ?? ""),
           }));
 
           if (isMounted) {
-            setItems(normalized);
+            setFetchedItems(normalized);
           }
         } else {
           console.error(`Failed to load dropdown for flag: ${flag} (${res.status})`);
@@ -67,14 +74,12 @@ export function FlagSelect({
       }
     };
 
-    if (flag) {
-      fetchOptions();
-    }
+    fetchOptions();
 
     return () => {
       isMounted = false;
     };
-  }, [flag]);
+  }, [flag, isControlled]);
 
   // Click outside to close
   useEffect(() => {
@@ -87,9 +92,9 @@ export function FlagSelect({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Find selected item whether `value` holds the ID or the Label text
+  // Match current selected item by label or id
   const selectedItem = items.find(
-    (item) => item.id === value || item.label === value
+    (item) => item.id === value || item.label.toLowerCase() === (value || "").toLowerCase()
   );
 
   return (
@@ -110,7 +115,7 @@ export function FlagSelect({
         } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         <span className={selectedItem ? "text-on-surface font-semibold truncate" : "text-outline truncate"}>
-          {selectedItem ? selectedItem.label : placeholder}
+          {selectedItem ? selectedItem.label : value ? value : placeholder}
         </span>
 
         <div className="flex items-center gap-1.5 ml-2 shrink-0">
@@ -132,14 +137,13 @@ export function FlagSelect({
           {items.length === 0 ? (
             <div className="px-3 py-2 text-outline text-center">No options available</div>
           ) : (
-            items.map((item) => {
+            items.map((item, index) => {
               const isSelected = item.id === value || item.label === value;
               return (
                 <button
                   type="button"
-                  key={item.id || item.label}
+                  key={`${item.id}-${index}`}
                   onClick={() => {
-                    // Pass item.label (e.g. "Kathmandu") or item.id depending on what tblcreatordocs stores
                     onChange(item.label);
                     setIsOpen(false);
                   }}

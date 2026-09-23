@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
     },
     ];
   },
+  images: {
+    remotePatterns: [
+      new URL("https://avatar.canva.com/**"),
+    ],
+  },
 };
 
 export default nextConfig;

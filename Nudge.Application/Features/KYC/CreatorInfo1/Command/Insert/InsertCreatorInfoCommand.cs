@@ -1,6 +1,5 @@
 using ErrorOr;
 using MediatR;
-using Nudge.Application.Common.Interfaces;
 using Nudge.Domain.Models;
 
 namespace Nudge.Application.Features.KYC.CreatorInfo.Commands.Insert
