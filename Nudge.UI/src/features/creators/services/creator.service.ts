@@ -1,4 +1,4 @@
-import { apiClient } from "@/src/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 import type { CreatorCategory, CreatorListResponse } from "../models/creator.model";
 
 export const creatorService = {

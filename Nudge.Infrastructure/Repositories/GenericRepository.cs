@@ -1,6 +1,6 @@
 using Dapper;
 using Microsoft.Extensions.Logging;
-using Nudge.Application.Interfaces;
+using Nudge.Application.Common.Interfaces;
 using System.Data;
 
 namespace Nudge.Infrastructure.Repositories;

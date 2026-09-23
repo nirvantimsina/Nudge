@@ -20,24 +20,37 @@ namespace Nudge.Presentation.Controllers
             }
         }
 
-        protected string? CurrentUserName
-        {
-            get
-            {
-                var claimValue = User.FindFirstValue(ClaimTypes.Name);
-                return claimValue ?? string.Empty;
-            }
-        }
+        protected string CurrentUserName => User.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
+
         protected int CurrentRoleId
         {
             get
             {
+                // Checks standard Role claim first, then matches "roleId" from JWTHelper
                 var claimValue = User.FindFirstValue(ClaimTypes.Role) 
-                ?? User.FindFirstValue("roleid")
-                ?? User.FindFirstValue("RoleId");
-                return int.TryParse(claimValue, out var roleid) ? roleid : 0;
+                              ?? User.FindFirstValue("roleId")
+                              ?? User.FindFirstValue("RoleId");
+
+                return int.TryParse(claimValue, out var roleId) ? roleId : 0;
             }
         }
+
+        protected int CurrentCreatorId
+        {
+            get
+            {
+                // Matches "creatorid" emitted in your JWTHelper
+                var claimValue = User.FindFirstValue("creatorid") 
+                              ?? User.FindFirstValue("creatorId")
+                              ?? User.FindFirstValue("CreatorId");
+
+                return int.TryParse(claimValue, out var creatorId) ? creatorId : 0;
+            }
+        }
+
+        protected IEnumerable<string> CurrentPermissions =>
+            User.FindAll("permission").Select(c => c.Value);
+
         protected IActionResult HandleResponse(ApiResponse result)
         {
             if (result == null)
@@ -54,7 +67,6 @@ namespace Nudge.Presentation.Controllers
                 data => Ok(ApiResponse<T>.Ok(data)),
                 errors => {
                     var firstError = errors.First();
-                    // You can map specific ErrorOr types to correct HTTP Status Codes here
                     return firstError.Type == ErrorType.NotFound 
                         ? NotFound(ApiResponse.Fail(firstError.Description, firstError.Code))
                         : BadRequest(ApiResponse.Fail(firstError.Description, firstError.Code));

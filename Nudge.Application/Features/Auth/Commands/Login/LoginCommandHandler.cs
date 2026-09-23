@@ -1,10 +1,10 @@
 using MediatR;
 using Nudge.Application.Features.Auth.Queries.GetMenuList;
 using Nudge.Application.Helpers;
-using Nudge.Application.Interfaces;
 using Nudge.Application.Models.Auth.Response;
 using System.Data;
 using Nudge.Shared.Wrappers;
+using Nudge.Application.Common.Interfaces;
 
 namespace Nudge.Application.Features.Auth.Commands.Login
 {
@@ -53,7 +53,7 @@ namespace Nudge.Application.Features.Auth.Commands.Login
                 ? menus.ToList()
                 : new List<MenuListResponseModel>();
 
-            var token = _jwt.GenerateToken(user.UserId, user.UserName, user.RoleId, listPermissions, Enumerable.Empty<string>());
+            var token = _jwt.GenerateToken(user.UserId, user.UserName, user.RoleId, user.CreatorId, listPermissions, Enumerable.Empty<string>());
 
             return ApiResponse.Ok(new LoginResponse
             {
@@ -63,7 +63,8 @@ namespace Nudge.Application.Features.Auth.Commands.Login
                 RoleName = user.RoleName ?? string.Empty,
                 RoleId = user.RoleId,
                 Permissions = listPermissions,
-                MenuList = menuList
+                MenuList = menuList,
+                CreatoId = user.CreatorId
             });
         }
     }

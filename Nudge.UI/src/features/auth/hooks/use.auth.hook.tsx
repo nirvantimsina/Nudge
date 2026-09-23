@@ -1,8 +1,7 @@
-// src/features/auth/hooks/use.auth.hook.tsx
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { apiClient } from "@/src/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 import {
   UserAuthData,
   UserSessionData,
@@ -12,6 +11,8 @@ import {
 
 interface AuthContextType {
   user: UserAuthData | null;
+  creatorId: number;
+  isCreator: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
@@ -26,23 +27,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserAuthData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Hydrate session on app load using the HttpOnly cookie
+  // Hydrate session on initial load or browser refresh via HttpOnly cookie
   const refreshSession = useCallback(async () => {
     try {
       const session = await apiClient.get<UserSessionData>("/Auth/Me");
 
-      // Hydrate basic session state if full profile isn't already in memory
-      setUser((prev) => {
-        if (prev) return prev;
-        return {
-          userName: session.userName,
-          name: session.userName,
-          roleName: "",
-          roleId: session.roleId,
-          permissions: [],
-          menuList: [],
-        };
+      if (session && session.userId) {
+        setUser({
+        userId: session.userId,
+        userName: session.userName,
+        name: session.name || session.userName,
+        roleId: session.roleId,
+        roleName: session.roleId === 1 ? "Admin" : "Creator",
+        creatorId: session.creatorId ?? 0,
+        permissions: session.permissions ?? [],
+        isKycVerified: session.isKycVerified ?? false,
       });
+      } else {
+        setUser(null);
+      }
     } catch {
       setUser(null);
     } finally {
@@ -57,12 +60,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (credentials: LoginRequest) => {
     setIsLoading(true);
     try {
-      // Calls http://localhost:5043/api/Auth/Login directly via apiClient
       const authData = await apiClient.post<LoginRequest, UserAuthData>(
         "/Auth/Login",
         credentials
       );
       setUser(authData);
+    } catch (error) {
+      setUser(null);
+      throw error; // Let UI forms catch and display validation errors
     } finally {
       setIsLoading(false);
     }
@@ -78,6 +83,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (authData) {
         setUser(authData);
       }
+    } catch (error) {
+      setUser(null);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -88,17 +96,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await apiClient.post("/Auth/Logout", {});
     } catch {
-      // Clear client state even if network call fails
+      // Clear client session even if backend logout fails
     } finally {
       setUser(null);
       setIsLoading(false);
     }
   };
 
+  const creatorId = user?.creatorId ?? 0;
+  const isCreator = creatorId > 0;
+
   return (
     <AuthContext.Provider
       value={{
         user,
+        creatorId,
+        isCreator,
         isAuthenticated: Boolean(user),
         isLoading,
         login,

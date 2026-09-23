@@ -7,7 +7,7 @@ namespace Nudge.Application.Helpers;
 
 public class JWTHelper(JWTSettings settings)
 {
-    public string GenerateToken(int userId, string userName, int roleId, IEnumerable<string> permissions, IEnumerable<string> menuList)
+    public string GenerateToken(int userId, string userName, int roleId, int creatorId, IEnumerable<string> permissions, IEnumerable<string> menuList)
     {
         if (string.IsNullOrEmpty(settings.SecretKey))
             throw new InvalidOperationException("JWT Secret Key is not configured in appsettings.json.");
@@ -19,7 +19,8 @@ public class JWTHelper(JWTSettings settings)
         {
             new(ClaimTypes.NameIdentifier, userId.ToString()),
             new(ClaimTypes.Name, userName),
-            new("roleId", roleId.ToString())
+            new("roleId", roleId.ToString()),
+            new("creatorid", creatorId.ToString())
         };
 
         // Add each permission as its own claim
@@ -37,8 +38,3 @@ public class JWTHelper(JWTSettings settings)
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
-
-
-
-
-

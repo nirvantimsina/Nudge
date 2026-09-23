@@ -1,12 +1,10 @@
-import { apiClient } from "@/src/lib/api-client";
-import type { ApiResponse, CreateNudgePayload, CreateNudgeResult, NudgeCreator } from "../models/nudge.model";
+import { apiClient } from "@/lib/api-client";
+import type { CreateNudgePayload, CreateNudgeResult, NudgeCreator } from "../models/nudge.model";
 
 export const nudgeService = {
   getPreviewCreators: async (): Promise<NudgeCreator[]> => {
-    // res might be { data: { id: 1, ... } } OR directly { id: 1, ... } depending on apiClient setup
     const res = await apiClient.get<any>("/PublicAPI/CreatorCard/admin-nudge");
 
-    // Extract creator object regardless of apiClient wrapping behavior
     let creator: NudgeCreator | null = null;
 
     if (res && typeof res === "object") {

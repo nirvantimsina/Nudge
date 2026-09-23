@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ApiServerError } from "@/src/lib/api-client";
+import { ApiServerError } from "@/lib/api-client";
 import type { NudgeCreator } from "../models/nudge.model";
 import { nudgeService } from "../services/nudge.service";
 

@@ -1,6 +1,6 @@
 using MediatR;
 using Nudge.Application.Helpers;
-using Nudge.Application.Interfaces;
+using Nudge.Application.Common.Interfaces;
 using Nudge.Domain.Models;
 using System.Data;
 using System.Data.Common;

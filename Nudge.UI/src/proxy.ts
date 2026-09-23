@@ -8,6 +8,7 @@ const PROTECTED_PREFIXES = [
   "/admin",
   "/settings",
   "/creator/studio",
+  "/kyc",
 ];
 
 const AUTH_PREFIXES = [
@@ -22,6 +23,7 @@ export const config = {
     "/settings/:path*",
     "/creator/studio/:path*",
     "/auth/:path*",
+    "/kyc/:path*",
   ],
 };
 

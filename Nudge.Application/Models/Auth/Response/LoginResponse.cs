@@ -9,6 +9,7 @@ public class LoginResponse
     public int RoleId { get; set; }
     public List<string> Permissions { get; set; } = [];
     public List<MenuListResponseModel> MenuList { get; set; } = [];
+    public int CreatoId { get; set; }
 }
 
 

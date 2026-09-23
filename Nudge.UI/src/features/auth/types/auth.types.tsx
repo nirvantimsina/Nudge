@@ -13,31 +13,26 @@ export interface SignUpRequest {
   phone?: string;
 }
 
-export interface MenuItem {
-  menuId: number;
-  menuName: string;
-  parentId: number;
-  icon: string | null;
-  path: string;
-  menuOrder: number;
-  childId: number | null;
-}
-
 export interface UserAuthData {
-  token?: string; // Stored in HttpOnly cookie; may be omitted or empty in body
+  userId: number,
+  token?: string;
   userName: string;
   name: string;
   roleName: string;
+  creatorId: number;
   roleId: number;
   permissions: string[];
-  menuList: MenuItem[];
+  isKycVerified: boolean;
 }
 
-// Lightweight session returned by /Auth/Me
 export interface UserSessionData {
-  userId: string;
+  userId: number;
   userName: string;
+  name?: string;
   roleId: number;
+  creatorId: number;
+  isKycVerified?: boolean;
+  permissions?: string[];
 }
 
 export interface ApiResponse<T> {
