@@ -13,7 +13,7 @@ namespace Nudge.Presentation.Controllers
 {
     [ApiController]
     public class AuthController(
-        IMediator mediator, 
+        IMediator mediator,
         ILogger<AuthController> logger,
         IWebHostEnvironment env) : ApiBaseController
     {
@@ -24,12 +24,23 @@ namespace Nudge.Presentation.Controllers
             logger.LogInformation("Login attempt for user: {UserName}", command.UserName);
             var result = await mediator.Send(command);
 
-            if (result.Success && result.Data is LoginResponse loginData && !string.IsNullOrEmpty(loginData.Token))
-            {
-                Response.SetAuthCookie(loginData.Token, env);
-            }
-
-            return HandleResponse(result);
+            return result.Match(
+                loginData =>
+                {
+                    if (!string.IsNullOrEmpty(loginData.Token))
+                    {
+                        Response.SetAuthCookie(loginData.Token, env);
+                    }
+                    // If you have a custom HandleResponse/ApiResponse mapping helper, use it here:
+                    return Ok(ApiResponse.Ok(loginData));
+                },
+                errors =>
+                {
+                    // Maps the ErrorOr collection directly to your traditional API error response handlers
+                    // Or use a custom error translator method like HandleResponse(result)
+                    return Problem(detail: errors.First().Description, statusCode: StatusCodes.Status401Unauthorized);
+                }
+            );
         }
 
         [HttpPost("SignUp")]

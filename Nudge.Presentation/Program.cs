@@ -12,85 +12,96 @@ using Nudge.Infrastructure.Repositories;
 using Nudge.Infrastructure.Services;
 using Nudge.Presentation.Middleware;
 using Scalar.AspNetCore;
+using Serilog;
 using System.Text;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// JWT Settings
-var jwtSettings = builder.Configuration
-    .GetSection("JwtSettings")
-    .Get<JWTSettings>()!;
-builder.Services.AddSingleton(jwtSettings);
-builder.Services.AddSingleton<JWTHelper>();
-
-// Services
-builder.Services.AddSingleton<PermissionService>();
-builder.Services.AddScoped<IGenericRepository, GenericRepository>();
-
-// Register HttpContextAccessor and the Scoped Creator Context
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICreatorContext, CreatorContext>();
-
-// Register the provider as Scoped to isolate threads/HTTP requests
-builder.Services.AddScoped<ICancellationTokenProvider, CancellationTokenProvider>();
-
-
-// Register Dapper type handlers for DateOnly
-SqlMapper.AddTypeHandler(new DateTimeHandler());
-SqlMapper.AddTypeHandler(new NullableDateTimeHandler());
-SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
-SqlMapper.AddTypeHandler(new NullableDateOnlyTypeHandler());
-
-// Register MediatR with the pipeline behavior
-// Unify all MediatR assembly scanning and pipeline registrations in ONE call
-builder.Services.AddMediatR(cfg =>
+Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateBootstrapLogger();
+try
 {
-    // 1. Scan all relevant assemblies for handlers and notifications
-    cfg.RegisterServicesFromAssembly(typeof(ICreatorContext).Assembly);
-    cfg.RegisterServicesFromAssembly(typeof(ICancellationTokenProvider).Assembly);
-    cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly);
+    var builder = WebApplication.CreateBuilder(args);
 
-    // 2. Register behaviors in execution order (Top to Bottom)
-    // Global Logging Behavior runs first to time and log everything
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-    
-    // CancellationToken runs early to ensure cancellation hooks are active
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CancellationTokenPipelineBehavior<,>));
-    
-    // Context Behavior hydrates domain context parameters
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CreatorContextBehavior<,>));
-});
+    // Direct internal logging factory to use Serilog settings from appsettings
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services));
+
+    // JWT Settings
+    var jwtSettings = builder.Configuration
+        .GetSection("JwtSettings")
+        .Get<JWTSettings>()!;
+    builder.Services.AddSingleton(jwtSettings);
+    builder.Services.AddSingleton<JWTHelper>();
+
+    // Services
+    builder.Services.AddSingleton<PermissionService>();
+    builder.Services.AddScoped<IGenericRepository, GenericRepository>();
+
+    // Register HttpContextAccessor and the Scoped Creator Context
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<ICreatorContext, CreatorContext>();
+
+    // Register the provider as Scoped to isolate threads/HTTP requests
+    builder.Services.AddScoped<ICancellationTokenProvider, CancellationTokenProvider>();
 
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly));
+    // Register Dapper type handlers for DateOnly
+    SqlMapper.AddTypeHandler(new DateTimeHandler());
+    SqlMapper.AddTypeHandler(new NullableDateTimeHandler());
+    SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+    SqlMapper.AddTypeHandler(new NullableDateOnlyTypeHandler());
 
-// Connection string
-var connectionString = builder.Configuration
-    .GetConnectionString("Nudge_DB")!;
-builder.Services.AddSingleton(new DbConnectionFactory(connectionString));
-
-// Dapper JSON column type handlers
-DapperTypeHandlers.Register();
-
-// Controllers
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-
-// Swagger with JWT support
-builder.Services.AddOpenApi(options =>
-{
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    // Register MediatR with the pipeline behavior
+    // Unify all MediatR assembly scanning and pipeline registrations in ONE call
+    builder.Services.AddMediatR(cfg =>
     {
-        document.Components ??= new OpenApiComponents();
-        document.Components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
+        // 1. Scan all relevant assemblies for handlers and notifications
+        cfg.RegisterServicesFromAssembly(typeof(ICreatorContext).Assembly);
+        cfg.RegisterServicesFromAssembly(typeof(ICancellationTokenProvider).Assembly);
+        cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly);
+
+        // 2. Register behaviors in execution order (Top to Bottom)
+        // Global Logging Behavior runs first to time and log everything
+        cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+
+        // CancellationToken runs early to ensure cancellation hooks are active
+        cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CancellationTokenPipelineBehavior<,>));
+
+        // Context Behavior hydrates domain context parameters
+        cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CreatorContextBehavior<,>));
+    });
+
+
+    builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly));
+
+    // Connection string
+    var connectionString = builder.Configuration
+        .GetConnectionString("Nudge_DB")!;
+    builder.Services.AddSingleton(new DbConnectionFactory(connectionString));
+
+    // Dapper JSON column type handlers
+    DapperTypeHandlers.Register();
+
+    // Controllers
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+
+    // Swagger with JWT support
+    builder.Services.AddOpenApi(options =>
+    {
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT",
-            Description = "Enter your JWT token"
-        });
-        document.SecurityRequirements.Add(new OpenApiSecurityRequirement
-        {
+            document.Components ??= new OpenApiComponents();
+            document.Components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "Enter your JWT token"
+            });
+            document.SecurityRequirements.Add(new OpenApiSecurityRequirement
+            {
             {
                 new OpenApiSecurityScheme
                 {
@@ -98,85 +109,96 @@ builder.Services.AddOpenApi(options =>
                 },
                 Array.Empty<string>()
             }
+            });
+            return Task.CompletedTask;
         });
-        return Task.CompletedTask;
     });
-});
 
-// JWT Auth with HttpOnly Cookie extraction
-var secretKey = jwtSettings.SecretKey ?? throw new InvalidOperationException("JWT SecretKey is missing in configuration.");
+    // JWT Auth with HttpOnly Cookie extraction
+    var secretKey = jwtSettings.SecretKey ?? throw new InvalidOperationException("JWT SecretKey is missing in configuration.");
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
-        };
-
-        // Reads the JWT from the HttpOnly cookie
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                if (context.Request.Cookies.TryGetValue("nudge_auth_token", out var token))
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+            };
+
+            // Reads the JWT from the HttpOnly cookie
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
                 {
-                    context.Token = token;
+                    if (context.Request.Cookies.TryGetValue("nudge_auth_token", out var token))
+                    {
+                        context.Token = token;
+                    }
+                    return Task.CompletedTask;
                 }
-                return Task.CompletedTask;
-            }
-        };
-    });
+            };
+        });
 
-builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization();
 
-// CORS (AllowCredentials is required for cookies)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("BlazorClient", policy =>
+    // CORS (AllowCredentials is required for cookies)
+    builder.Services.AddCors(options =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials(); // REQUIRED for HttpOnly cookies
+        options.AddPolicy("NextClient", policy =>
+        {
+            policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
     });
-});
 
-var app = builder.Build();
+    var app = builder.Build();
 
-app.UseMiddleware<ExceptionMiddleware>();
+    app.UseMiddleware<ExceptionMiddleware>();
+    app.UseSerilogRequestLogging();
 
-// Hydrate cache on startup
-using (var startupScope = app.Services.CreateScope())
-{
-    var permService = startupScope.ServiceProvider.GetRequiredService<PermissionService>();
-    await permService.LoadAsync();
+    // Hydrate cache on startup
+    using (var startupScope = app.Services.CreateScope())
+    {
+        var permService = startupScope.ServiceProvider.GetRequiredService<PermissionService>();
+        await permService.LoadAsync();
+    }
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+        app.MapScalarApiReference();
+    }
+
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseExceptionHandler("/Home/Error");
+        app.UseHsts();
+    }
+
+    app.UseRouting();
+    app.UseCors("NextClient");
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapStaticAssets();
+    app.MapControllers();
+
+    app.Run();
 }
 
-if (app.Environment.IsDevelopment())
+catch (Exception ex)
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    Log.Fatal(ex, "The host terminated unexpectedly during startup.");
 }
-
-if (!app.Environment.IsDevelopment())
+finally
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    Log.CloseAndFlush();
 }
-
-app.UseRouting();
-app.UseCors("BlazorClient");
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapStaticAssets();
-app.MapControllers();
-
-app.Run();

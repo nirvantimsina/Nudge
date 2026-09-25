@@ -23,8 +23,7 @@ namespace Nudge.Presentation.Controllers.KYC
         }
 
         [HttpPost("CreatorInfo")]
-        public async Task<IActionResult> InsertCreatorInfo(
-            [FromBody] InsertCreatorInfoCommand command
+        public async Task<IActionResult> InsertCreatorInfo([FromBody] InsertCreatorInfoCommand command
         )
         {
             var result = await mediator.Send(command);
@@ -39,9 +38,7 @@ namespace Nudge.Presentation.Controllers.KYC
         }
 
         [HttpPost("CreatorDocs")]
-        public async Task<IActionResult> InsertCreatorDocs(
-            [FromBody] InsertCreatorDocsCommand command
-        )
+        public async Task<IActionResult> InsertCreatorDocs([FromBody] InsertCreatorDocsCommand command)
         {
             var result = await mediator.Send(command);
             return HandleErrorOr(result);
@@ -55,9 +52,7 @@ namespace Nudge.Presentation.Controllers.KYC
         }
 
         [HttpPost("CreatorAddress")]
-        public async Task<IActionResult> GetCreatorAddress(
-            [FromBody] InsertCreatorAddressCommand query
-        )
+        public async Task<IActionResult> GetCreatorAddress([FromBody] InsertCreatorAddressCommand query)
         {
             var result = await mediator.Send(query);
             return HandleErrorOr(result);
@@ -71,9 +66,7 @@ namespace Nudge.Presentation.Controllers.KYC
         }
 
         [HttpPost("CreatorVerification")]
-        public async Task<IActionResult> InsertCreatorVerification(
-            [FromBody] InsertCreatorVerificationCommand command
-        )
+        public async Task<IActionResult> InsertCreatorVerification([FromBody] InsertCreatorVerificationCommand command)
         {
             var result = await mediator.Send(command);
             return HandleErrorOr(result);
