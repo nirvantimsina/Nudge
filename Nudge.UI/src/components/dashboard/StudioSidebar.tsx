@@ -15,6 +15,7 @@ import {
   Landmark,
   Scale,
   Sparkles,
+  Spline,
 } from "lucide-react";
 
 export function StudioSidebar() {
@@ -164,6 +165,12 @@ export function StudioSidebar() {
       statusBadge: summary?.kycStatus === "verified" ? "Ready" : "Hold",
       isActive: pathname.startsWith("/payouts"),
     },
+    {
+      label: "Loom",
+      href: "/loom",
+      icon: Spline,
+      isActive: pathname.startsWith("/loom"),
+    }
   ];
 
   return (

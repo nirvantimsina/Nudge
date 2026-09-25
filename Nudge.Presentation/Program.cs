@@ -31,6 +31,10 @@ builder.Services.AddScoped<IGenericRepository, GenericRepository>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICreatorContext, CreatorContext>();
 
+// Register the provider as Scoped to isolate threads/HTTP requests
+builder.Services.AddScoped<ICancellationTokenProvider, CancellationTokenProvider>();
+
+
 // Register Dapper type handlers for DateOnly
 SqlMapper.AddTypeHandler(new DateTimeHandler());
 SqlMapper.AddTypeHandler(new NullableDateTimeHandler());
@@ -38,12 +42,25 @@ SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 SqlMapper.AddTypeHandler(new NullableDateOnlyTypeHandler());
 
 // Register MediatR with the pipeline behavior
+// Unify all MediatR assembly scanning and pipeline registrations in ONE call
 builder.Services.AddMediatR(cfg =>
 {
-    // Point to any type inside Nudge.Application
+    // 1. Scan all relevant assemblies for handlers and notifications
     cfg.RegisterServicesFromAssembly(typeof(ICreatorContext).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(ICancellationTokenProvider).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly);
+
+    // 2. Register behaviors in execution order (Top to Bottom)
+    // Global Logging Behavior runs first to time and log everything
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+    
+    // CancellationToken runs early to ensure cancellation hooks are active
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CancellationTokenPipelineBehavior<,>));
+    
+    // Context Behavior hydrates domain context parameters
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CreatorContextBehavior<,>));
 });
+
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly));
 
