@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres-database
+    ports:
+      - "5444:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: nudge
+    volumes:
+      - nudge_postgres_data:/var/lib/postgresql/data
+      - ./Nudge.DB:/docker-entrypoint-initdb.d
+    networks:
+      - nudge-network
+
+  seq-analytics:
+    image: datalust/seq:latest
+    container_name: nudge-seq
+    ports:
+      - "5341:80"
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
+    volumes:
+      - nudge_seq_store:/data
+    networks:
+      - nudge-network
+    depends_on:
+      - postgres-db
+
+  nudge-api:
+    build:
+      context: .
+      dockerfile: Nudge.Presentation/Dockerfile
+    container_name: nudge-backend-api
+    ports:
+      - "5043:5043"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Nudge_DB=Host=postgres-db;Port=5432;Database=nudge;Username=postgres;Password=password;
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq-analytics:80
+    volumes:
+      - .:/src
+    networks:
+      - nudge-network
+    depends_on:
+      - postgres-db
+      - seq-analytics
+
+  nudge-ui:
+    build:
+      context: ./Nudge.UI
+      dockerfile: Dockerfile
+    container_name: nudge-frontend-ui
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Nudge.UI:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5043/api   # used by browser
+      - INTERNAL_API_URL=http://nudge-api:5043/api      # used by server components
+    networks:
+      - nudge-network
+    depends_on:
+      - nudge-api
+
+volumes:
+  nudge_postgres_data:
+    name: nudge_postgres_data
+  nudge_seq_store:
+    name: nudge_seq_store
+
+networks:
+  nudge-network:
+    name: nudge-network
+    driver: bridge
