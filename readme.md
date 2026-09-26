@@ -32,15 +32,15 @@ Nudge is built to close that gap:
                                                        │
                          ┌─────────────────────────────┴─────────────────────────────┐
                          ▼                                                           ▼
-       ┌──────────────────────────────────┐                        ┌──────────────────────────────────┐
-       │           Nudge Studio           │                        │            Nudge Loom            │
-       │    (Creator Operating System)    │                        │   (Crowdfunding / Public Goods)  │
-       ├──────────────────────────────────┤                        ├──────────────────────────────────┤
+       ┌──────────────────────────────────┐                        ┌───────────────────────────────────┐
+       │           Nudge Studio           │                        │            Nudge Loom             │
+       │    (Creator Operating System)    │                        │   (Crowdfunding / Public Goods)   │
+       ├──────────────────────────────────┤                        ├───────────────────────────────────|
        │ • OBS WebSocket live overlays    │                        │ • 0% fee campaigns                │
-       │ • Transaction & settlement audit │                        │ • Open-source maintenance pools  │
+       │ • Transaction & settlement audit │                        │ • Open-source maintenance pools   │
        │ • TDS / PAN tax export           │                        │ • Milestone escrow                │
        │ • Fan tiers & memberships        │                        │ • Multi-donor transparency ledger │
-       └──────────────────────────────────┘                        └──────────────────────────────────┘
+       └──────────────────────────────────┘                        └───────────────────────────────────┘
 ```
 
 ---
