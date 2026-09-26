@@ -1,17 +1,18 @@
+// src/app/kyc/step-3/page.tsx
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import React, { useMemo, useState } from "react";
 import { useCreator } from "@/src/context/CreatorContext";
 import { KycStepContainer } from "@/src/components/kyc/KycStepContainer";
 import { toast } from "@/lib/toast";
 import { MapPin, Info, BadgeCheck, AlertCircle, Navigation } from "lucide-react";
 import { FlagSelect } from "@/src/components/common/FlagSelect";
-import {
-  ALL_DISTRICTS,
-  getLocalBodiesByDistrict,
-  getLocationMetadata,
-} from "@/lib/nepalGeo";
+import { ALL_DISTRICTS, getLocalBodiesByDistrict, getLocationMetadata } from "@/lib/nepalGeo";
+import { kycService } from "@/src/features/kyc/services/kyc.service";
+import { addressFormSchema, addressFormProceedSchema } from "@/src/features/kyc/schemas/kyc.schemas";
+import { CreatorAddressDTO } from "@/src/features/kyc/types/creator-address.types";
+import { useKycStep } from "@/src/features/kyc/hooks/useKycStep";
+import Loading from "@/src/app/loading";
 
 interface AddressFormData {
   permDistrict: string;
@@ -24,88 +25,70 @@ interface AddressFormData {
   latitude: string;
 }
 
-export default function KycStepThreePage() {
-  const router = useRouter();
-  const { summary, isLocked, refreshSummary } = useCreator();
-  const isVerified = summary?.isVerified ?? false;
+const INITIAL_FORM_DATA: AddressFormData = {
+  permDistrict: "",
+  permMunicipality: "",
+  permWardNo: "",
+  currentAddressLine: "",
+  currentDistrict: "",
+  currentWard: "",
+  longitude: "85.3114",
+  latitude: "27.6841",
+};
 
-  const [formData, setFormData] = useState<AddressFormData>({
-    permDistrict: "",
-    permMunicipality: "",
-    permWardNo: "",
-    currentAddressLine: "",
-    currentDistrict: "",
-    currentWard: "",
-    longitude: "85.3114",
-    latitude: "27.6841",
+// Bridge: DTO (wire shape, nullable numbers) <-> form state (empty-string sentinel for unset)
+function dtoToForm(dto: CreatorAddressDTO): AddressFormData {
+  return {
+    ...dto,
+    permWardNo: dto.permWardNo ?? "",
+    currentWard: dto.currentWard ?? "",
+  };
+}
+
+function formToDto(form: AddressFormData): CreatorAddressDTO {
+  return {
+    ...form,
+    permDistrict: form.permDistrict.trim(),
+    permMunicipality: form.permMunicipality.trim(),
+    permWardNo: form.permWardNo === "" ? 0 : form.permWardNo,
+    currentAddressLine: form.currentAddressLine.trim(),
+    currentDistrict: form.currentDistrict.trim(),
+    currentWard: form.currentWard === "" ? 0 : form.currentWard,
+    longitude: form.longitude?.trim() || "85.3114",
+    latitude: form.latitude?.trim() || "27.6841",
+  };
+}
+
+export default function KycStepThreePage() {
+  const { summary, isLocked } = useCreator();
+  const isVerified = summary?.isVerified ?? false;
+  const [isSameAddress, setIsSameAddress] = useState(false);
+
+  const { formData, setFormData, isLoading, isSubmitting, errorMsg, submit } = useKycStep<AddressFormData>({
+    load: async () => {
+      const dto = await kycService.getCreatorAddress();
+      return dto ? dtoToForm(dto) : null;
+    },
+    save: (form) => kycService.saveCreatorAddress(formToDto(form)),
+    initial: INITIAL_FORM_DATA,
+    draftSchema: addressFormSchema,
+    proceedSchema: addressFormProceedSchema,
+    nextRoute: "/kyc/step-4",
   });
 
-  const [isSameAddress, setIsSameAddress] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const permPalikaOptions = useMemo(() => getLocalBodiesByDistrict(formData.permDistrict), [formData.permDistrict]);
 
-  // Dynamic memoized Palikas strictly for the selected district
-  const permPalikaOptions = useMemo(() => {
-    return getLocalBodiesByDistrict(formData.permDistrict);
-  }, [formData.permDistrict]);
-
-  // Hydrate saved record on mount
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadSavedAddress() {
-      try {
-        const res = await fetch("/api/KYC/CreatorAddress", {
-          headers: { Accept: "application/json" },
-          credentials: "include",
-        });
-
-        if (!res.ok || res.status === 204) return;
-
-        const text = await res.text();
-        if (!text || !text.trim()) return;
-
-        const json = JSON.parse(text);
-        const d = json.data || json;
-
-        if (d && isMounted && (d.permDistrict || d.currentDistrict || d.permdistrict)) {
-          setFormData({
-            permDistrict: d.permDistrict || d.permdistrict || "",
-            permMunicipality: d.permMunicipality || d.permmunicipality || "",
-            permWardNo: d.permWardNo ?? d.permwardno ?? "",
-            currentAddressLine: d.currentAddressLine || d.currentaddressline || "",
-            currentDistrict: d.currentDistrict || d.currentdistrict || "",
-            currentWard: d.currentWard ?? d.currentward ?? "",
-            longitude: d.longitude || "85.3114",
-            latitude: d.latitude || "27.6841",
-          });
-        }
-      } catch (err) {
-        console.warn("No existing address record or failed to parse:", err);
-      }
-    }
-
-    loadSavedAddress();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const updated = {
         ...prev,
         [name]: name.includes("Ward") ? (value === "" ? "" : Number(value)) : value,
       };
-
       if (isSameAddress && name === "permWardNo") {
         updated.currentWard = updated.permWardNo;
         updated.currentAddressLine = `Ward ${updated.permWardNo || ""}, ${updated.permMunicipality}, ${updated.permDistrict}, Nepal`;
       }
-
       return updated;
     });
   };
@@ -126,92 +109,11 @@ export default function KycStepThreePage() {
     }
   };
 
-  const handleSubmit = async (e?: React.FormEvent, proceedToNext: boolean = false) => {
-    if (e) e.preventDefault();
-    setErrorMsg(null);
-
-    if (proceedToNext) {
-      if (
-        !formData.permDistrict.trim() ||
-        !formData.permMunicipality.trim() ||
-        formData.permWardNo === "" ||
-        !formData.currentAddressLine.trim() ||
-        !formData.currentDistrict.trim() ||
-        formData.currentWard === ""
-      ) {
-        toast.error("Please fill in all mandatory address fields (*)");
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/KYC/CreatorAddress", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          permDistrict: formData.permDistrict.trim(),
-          permMunicipality: formData.permMunicipality.trim(),
-          permWardNo: Number(formData.permWardNo) || 1,
-          currentAddressLine: formData.currentAddressLine.trim(),
-          currentDistrict: formData.currentDistrict.trim(),
-          currentWard: Number(formData.currentWard) || 1,
-          longitude: formData.longitude?.trim() || "85.3114",
-          latitude: formData.latitude?.trim() || "27.6841",
-        }),
-      });
-
-      const rawText = await res.text();
-      let resData: any = {};
-      if (rawText && rawText.trim()) {
-        try {
-          resData = JSON.parse(rawText);
-        } catch {
-          resData = { msg: rawText };
-        }
-      }
-
-      const isSuccess =
-        res.ok &&
-        (resData.status === 0 ||
-          resData.status === "0" ||
-          resData.statusCode === 200);
-
-      if (!isSuccess) {
-        throw new Error(
-          resData.msg ||
-            resData.message ||
-            resData.title ||
-            "Failed to save address details."
-        );
-      }
-
-      await refreshSummary();
-
-      if (proceedToNext) {
-        toast.success("Address verified & saved!");
-        router.push("/kyc/step-4");
-      } else {
-        toast.success("Address draft saved.");
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to save details. Please try again.");
-      toast.error(err.message || "Failed to save details.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleAutoDetectGps = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser.");
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setFormData((p) => ({
@@ -229,6 +131,10 @@ export default function KycStepThreePage() {
 
   const isCurrentAddressLocked = isLocked || isSameAddress;
 
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <KycStepContainer
       currentStep={3}
@@ -241,8 +147,8 @@ export default function KycStepThreePage() {
       isSubmitting={isSubmitting}
       backHref="/kyc/step-2"
       nextLabel="Save & Proceed to Step 4"
-      onSaveDraft={() => handleSubmit(undefined, false)}
-      onSubmit={(e) => handleSubmit(e, true)}
+      onSaveDraft={() => submit(undefined, false)}
+      onSubmit={(e) => submit(e, true)}
     >
       <div className="space-y-6">
         {errorMsg && (
@@ -257,9 +163,7 @@ export default function KycStepThreePage() {
           <div className="flex items-center justify-between border-b border-outline-variant/60 pb-3">
             <div className="flex items-center gap-2">
               <BadgeCheck size={18} className="text-primary" />
-              <h2 className="text-sm font-bold text-on-surface">
-                Section A: Permanent Address (स्थायी ठेगाना)
-              </h2>
+              <h2 className="text-sm font-bold text-on-surface">Section A: Permanent Address (स्थायी ठेगाना)</h2>
             </div>
             <span className="text-[11px] font-semibold bg-surface-container px-2.5 py-0.5 rounded-full text-on-surface-variant">
               As stated in Citizenship
@@ -267,11 +171,9 @@ export default function KycStepThreePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            {/* Permanent District */}
             <div className="md:col-span-5 space-y-1">
               <label className="text-xs font-semibold text-on-surface flex justify-between">
                 <span>Permanent District (जिल्ला) *</span>
-                <span className="text-outline text-[10px]">permdistrict</span>
               </label>
               <FlagSelect
                 disabled={isLocked}
@@ -281,7 +183,6 @@ export default function KycStepThreePage() {
                 onChange={(val: string) => {
                   const cleanDistrict = val.split("(")[0].trim();
                   const meta = getLocationMetadata(cleanDistrict);
-
                   setFormData((prev) => {
                     const updated = {
                       ...prev,
@@ -290,7 +191,6 @@ export default function KycStepThreePage() {
                       latitude: meta?.lat ?? prev.latitude,
                       longitude: meta?.lon ?? prev.longitude,
                     };
-
                     if (isSameAddress) {
                       updated.currentDistrict = cleanDistrict;
                       updated.currentAddressLine = `Ward ${prev.permWardNo || ""}, ${cleanDistrict}, Nepal`;
@@ -301,27 +201,20 @@ export default function KycStepThreePage() {
               />
             </div>
 
-            {/* Permanent Palika / Local Body */}
             <div className="md:col-span-5 space-y-1">
               <label className="text-xs font-semibold text-on-surface flex justify-between">
                 <span>Municipality / Gaunpalika (नगरपालिका / गा.पा.) *</span>
-                <span className="text-outline text-[10px]">permmunicipality</span>
               </label>
               <FlagSelect
                 disabled={isLocked || !formData.permDistrict}
                 items={permPalikaOptions}
                 value={formData.permMunicipality}
                 placeholder={
-                  !formData.permDistrict
-                    ? "Select District First"
-                    : permPalikaOptions.length === 0
-                    ? "No Palikas Found"
-                    : "Select Palika / Municipality"
+                  !formData.permDistrict ? "Select District First" : permPalikaOptions.length === 0 ? "No Palikas Found" : "Select Palika / Municipality"
                 }
                 onChange={(val: string) => {
                   const cleanPalika = val.split("(")[0].trim();
                   const meta = getLocationMetadata(cleanPalika);
-
                   setFormData((prev) => {
                     const updated = {
                       ...prev,
@@ -329,7 +222,6 @@ export default function KycStepThreePage() {
                       latitude: meta?.lat ?? prev.latitude,
                       longitude: meta?.lon ?? prev.longitude,
                     };
-
                     if (isSameAddress) {
                       updated.currentAddressLine = `Ward ${prev.permWardNo || ""}, ${cleanPalika}, ${prev.permDistrict}, Nepal`;
                     }
@@ -339,7 +231,6 @@ export default function KycStepThreePage() {
               />
             </div>
 
-            {/* Permanent Ward */}
             <div className="md:col-span-2 space-y-1">
               <label className="text-xs font-semibold text-on-surface flex justify-between">
                 <span>Ward (वडा) *</span>
@@ -374,9 +265,7 @@ export default function KycStepThreePage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-outline-variant/60 pb-3 gap-2">
             <div className="flex items-center gap-2">
               <MapPin size={18} className="text-primary" />
-              <h2 className="text-sm font-bold text-on-surface">
-                Section B: Current / Studio Address (हालको ठेगाना)
-              </h2>
+              <h2 className="text-sm font-bold text-on-surface">Section B: Current / Studio Address (हालको ठेगाना)</h2>
             </div>
 
             <label className={`inline-flex items-center gap-2 select-none ${isLocked ? "cursor-not-allowed opacity-75" : "cursor-pointer"}`}>
@@ -388,9 +277,7 @@ export default function KycStepThreePage() {
                 className="sr-only peer"
               />
               <div className="w-10 h-5 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-outline-variant after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary relative" />
-              <span className="text-xs font-semibold text-on-surface">
-                Same as Permanent Address
-              </span>
+              <span className="text-xs font-semibold text-on-surface">Same as Permanent Address</span>
             </label>
           </div>
 
@@ -399,7 +286,6 @@ export default function KycStepThreePage() {
           </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Inputs Column */}
             <div className="lg:col-span-7 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -411,10 +297,7 @@ export default function KycStepThreePage() {
                     placeholder="Select Current District"
                     onChange={(val: string) => {
                       const cleanDistrict = val.split("(")[0].trim();
-                      setFormData((prev) => ({
-                        ...prev,
-                        currentDistrict: cleanDistrict,
-                      }));
+                      setFormData((prev) => ({ ...prev, currentDistrict: cleanDistrict }));
                     }}
                   />
                 </div>
@@ -439,14 +322,8 @@ export default function KycStepThreePage() {
                 </div>
               </div>
 
-              {/* Current Address Line */}
               <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-on-surface">
-                    Full Current Address Line (टोल / सडक / घर नं.) *
-                  </label>
-                  <span className="text-[10px] text-outline">currentaddressline</span>
-                </div>
+                <label className="text-xs font-semibold text-on-surface">Full Current Address Line (टोल / सडक / घर नं.) *</label>
                 <textarea
                   name="currentAddressLine"
                   disabled={isCurrentAddressLocked}
@@ -465,7 +342,6 @@ export default function KycStepThreePage() {
                 </span>
               </div>
 
-              {/* Coordinates */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[11px] font-semibold text-on-surface">Latitude</label>
@@ -500,7 +376,6 @@ export default function KycStepThreePage() {
               </div>
             </div>
 
-            {/* Map Preview */}
             <div className="lg:col-span-5 flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs font-semibold text-on-surface">
                 <span>Pinpoint Geolocation</span>
@@ -515,7 +390,6 @@ export default function KycStepThreePage() {
                   alt="Kathmandu Valley Map"
                   className="w-full h-full object-cover"
                 />
-
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex flex-col justify-between p-3 pointer-events-none">
                   <div className="self-end bg-surface-container-lowest/90 backdrop-blur px-2.5 py-0.5 rounded-md text-[11px] font-mono border border-outline-variant/60 shadow-xs">
                     {formData.latitude}° N, {formData.longitude}° E

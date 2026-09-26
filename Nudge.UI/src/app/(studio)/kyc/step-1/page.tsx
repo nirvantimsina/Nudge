@@ -1,131 +1,49 @@
+// src/app/kyc/step-1/page.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import React from "react";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import { kycService } from "@/src/features/kyc/services/kyc.service";
 import { CreatorInfoDTO } from "@/src/features/kyc/types/creator-info.types";
+import { creatorInfoSchema, creatorInfoProceedSchema } from "@/src/features/kyc/schemas/kyc.schemas";
+import { useKycStep } from "@/src/features/kyc/hooks/useKycStep";
 import { NepaliDatePicker } from "@/src/components/common/NepaliDatePicker";
 import Loading from "@/src/app/loading";
 import { InputField, RadioGroup } from "@/src/components/ui";
 import { useCreator } from "@/src/context/CreatorContext";
 import { KycStepContainer } from "@/src/components/kyc/KycStepContainer";
-import { toast } from "@/lib/toast";
+
+const INITIAL_FORM_DATA: CreatorInfoDTO = {
+  fullName: "",
+  dobAd: "",
+  dobBs: "",
+  gender: 1, // Default: 1 (Male)
+  grandfatherName: "",
+  fatherName: "",
+  motherName: "",
+  spouseName: "",
+};
 
 export default function KycStepOnePage() {
-  const router = useRouter();
-  const { summary, isLocked, refreshSummary } = useCreator();
+  const { summary, isLocked } = useCreator();
   const isVerified = summary?.isVerified ?? false;
 
-
-  const [formData, setFormData] = useState<CreatorInfoDTO>({
-    fullName: "",
-    dobAD: "",
-    dobBS: "",
-    gender: 1, // Default: 1 (Male)
-    grandfatherName: "",
-    fatherName: "",
-    motherName: "",
-    spouseName: "",
+  const { formData, setFormData, isLoading, isSubmitting, errorMsg, submit } = useKycStep<CreatorInfoDTO>({
+    load: kycService.getCreatorInfo,
+    save: (data) =>
+      kycService.saveCreatorInfo({
+        ...data,
+        spouseName: data.spouseName?.trim() || undefined,
+      }),
+    initial: INITIAL_FORM_DATA,
+    draftSchema: creatorInfoSchema,
+    proceedSchema: creatorInfoProceedSchema,
+    nextRoute: "/kyc/step-2",
   });
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchExistingData = async () => {
-      try {
-        const response: any = await kycService.getCreatorInfo();
-
-        if (response && response.fullName && isMounted) {
-          const resolvedDobAD = response.dobAd ?? response.dobAD ?? response.dobad ?? "";
-          const resolvedDobBS = response.dobBs ?? response.dobBS ?? response.dobbs ?? "";
-
-          setFormData({
-            fullName: response.fullName || "",
-            dobAD: typeof resolvedDobAD === "string" ? resolvedDobAD.split("T")[0] : "",
-            dobBS: typeof resolvedDobBS === "string" ? resolvedDobBS.trim() : "",
-            gender: Number(response.gender) || 1,
-            grandfatherName: response.grandfatherName || "",
-            fatherName: response.fatherName || "",
-            motherName: response.motherName || "",
-            spouseName: response.spouseName || "",
-          });
-        }
-      } catch (err) {
-        console.warn("Could not load initial personal details:", err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    fetchExistingData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e?: React.FormEvent, proceedToNext: boolean = false) => {
-    if (e) e.preventDefault();
-    setErrorMsg(null);
-
-    // 1. Strict validation when proceeding
-    if (proceedToNext) {
-      if (
-        !formData.fullName.trim() ||
-        !formData.dobAD ||
-        !formData.dobBS ||
-        !formData.grandfatherName.trim() ||
-        !formData.fatherName.trim() ||
-        !formData.motherName.trim()
-      ) {
-        toast.error("Please fill in all required fields marked with * to proceed.");
-        return;
-      }
-    } else {
-      // 2. Lenient check for drafts
-      if (!formData.fullName.trim()) {
-        toast.error("Please enter at least your Full Name before saving a draft.");
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-
-    const payload: CreatorInfoDTO = {
-      ...formData,
-      gender: Number(formData.gender),
-      spouseName: formData.spouseName?.trim() || undefined,
-    };
-
-    try {
-      await kycService.saveCreatorInfo(payload);
-
-      // Refresh CreatorContext so step progression & % calculate immediately
-      await refreshSummary();
-
-      if (proceedToNext) {
-        toast.success("Personal details saved!");
-        router.push("/kyc/step-2");
-      } else {
-        toast.success("Draft saved successfully.");
-      }
-    } catch (err: any) {
-      const msg = err?.message || "Failed to save details. Please check your connection.";
-      setErrorMsg(msg);
-      toast.error(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   if (isLoading) {
@@ -143,19 +61,17 @@ export default function KycStepOnePage() {
       errorMessage={errorMsg}
       isSubmitting={isSubmitting}
       nextLabel="Save & Proceed to Step 2"
-      onSaveDraft={() => handleSubmit(undefined, false)}
-      onSubmit={(e) => handleSubmit(e, true)}
+      onSaveDraft={() => submit(undefined, false)}
+      onSubmit={(e) => submit(e, true)}
     >
       <div className="space-y-6">
-        {/* Lock / Review Alert */}
-          {errorMsg && (
+        {errorMsg && (
           <div className="p-4 rounded-xl bg-error-container/60 border border-error/30 text-on-error-container text-xs flex items-center gap-2">
             <AlertCircle size={16} className="text-error shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
-        {/* Form Container */}
         <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-xs space-y-6">
           <InputField
             label="Full Legal Name"
@@ -178,11 +94,9 @@ export default function KycStepOnePage() {
               Date of Birth (जन्म मिति) <span className="text-primary font-bold">*</span>
             </label>
             <NepaliDatePicker
-              dobAD={formData.dobAD}
-              dobBS={formData.dobBS}
-              onDateChange={({ dobAD, dobBS }) =>
-                setFormData((prev) => ({ ...prev, dobAD, dobBS }))
-              }
+              dobAD={formData.dobAd}
+              dobBS={formData.dobBs}
+              onDateChange={({ dobAD, dobBS }) => setFormData((prev) => ({ ...prev, dobAD, dobBS }))}
               disabled={isLocked}
             />
           </div>

@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@remotemerge/nepali-date-converter": "^1.2.1",
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.8",
     "lucide-react": "^1.45.0",

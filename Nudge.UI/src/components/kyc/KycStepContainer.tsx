@@ -1,7 +1,7 @@
 // src/components/kyc/KycStepContainer.tsx
 "use client";
 
-import React from "react";
+import React, { SubmitEvent } from "react";
 import { KycStepper } from "@/src/components/kyc/KycStepper";
 import { Button } from "@/src/components/ui";
 import {
@@ -27,7 +27,7 @@ interface KycStepContainerProps {
   nextHref?: string;
   nextLabel?: string;
   onSaveDraft?: () => void;
-  onSubmit?: (e: React.FormEvent) => void;
+  onSubmit?: (e: SubmitEvent<HTMLFormElement>) => void; 
   children: React.ReactNode;
 }
 

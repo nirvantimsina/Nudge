@@ -55,7 +55,6 @@ export default function FeaturesPage() {
       </main>
 
       <Footer
-        logoUrl="/logo.png"
         copyrightText="© 2026 Nudge Nepal Pvt. Ltd. Empowering Himalayan storytellers & makers. Built with love in Kathmandu."
       />
     </>

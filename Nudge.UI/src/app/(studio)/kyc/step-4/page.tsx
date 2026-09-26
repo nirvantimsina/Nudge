@@ -1,18 +1,15 @@
+// src/app/kyc/step-4/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useCreator } from "@/src/context/CreatorContext";
 import { KycStepContainer } from "@/src/components/kyc/KycStepContainer";
-import { toast } from "@/lib/toast";
 import Loading from "@/src/app/loading";
 import { InputField } from "@/src/components/ui";
-import {
-  Globe,
-  TrendingUp,
-  ShieldCheck,
-  ExternalLink,
-} from "lucide-react";
+import { Globe, TrendingUp, ShieldCheck, ExternalLink } from "lucide-react";
+import { kycService } from "@/src/features/kyc/services/kyc.service";
+import { creatorVerificationSchema, creatorVerificationProceedSchema } from "@/src/features/kyc/schemas/kyc.schemas";
+import { CreatorVerificationDTO } from "@/src/features/kyc/types/creator-verification.types";
+import { useKycStep } from "@/src/features/kyc/hooks/useKycStep";
 
 // SVG brand icons matching standard 24x24 Lucide icon dimensions
 const YoutubeIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
@@ -63,132 +60,31 @@ const INCOME_BRACKETS = [
   { value: "Above NPR 1,500,000", label: "Above NPR 15 Lakhs / yr (Professional Studio)" },
 ];
 
+const INITIAL_FORM_DATA: CreatorVerificationDTO = {
+  primaryPlatform: "YouTube",
+  channelUrl: "",
+  estimatedAnnualIncome: "NPR 200,000 - 500,000",
+};
+
 export default function KycStepFourPage() {
-  const router = useRouter();
-  const { summary, isLocked, refreshSummary } = useCreator();
+  const { summary, isLocked } = useCreator();
   const isVerified = summary?.isVerified ?? false;
 
-  const [formData, setFormData] = useState({
-    primaryPlatform: "YouTube",
-    channelUrl: "",
-    estimatedAnnualIncome: "NPR 200,000 - 500,000",
+  const { formData, setFormData, isLoading, isSubmitting, errorMsg, submit } = useKycStep<CreatorVerificationDTO>({
+    load: kycService.getCreatorVerification,
+    save: (data) =>
+      kycService.saveCreatorVerification({
+        ...data,
+        primaryPlatform: data.primaryPlatform.trim(),
+        channelUrl: data.channelUrl.trim(),
+      }),
+    initial: INITIAL_FORM_DATA,
+    draftSchema: creatorVerificationSchema,
+    proceedSchema: creatorVerificationProceedSchema,
+    nextRoute: "/studio",
   });
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function fetchExistingVerification() {
-      try {
-        const res = await fetch("/api/KYC/CreatorVerification", {
-          method: "GET",
-          headers: { Accept: "application/json" },
-          credentials: "include",
-        });
-
-        if (!res.ok || res.status === 204) return;
-
-        const raw = await res.json();
-        const d = raw.data || raw;
-
-        if (d && isMounted) {
-          setFormData({
-            primaryPlatform: d.primaryPlatform ?? d.primaryplatform,
-            channelUrl: d.channelUrl ?? d.channelurl ?? "",
-            estimatedAnnualIncome: d.estimatedAnnualIncome ?? d.estimatedannualincome,
-          });
-        }
-      } catch (err) {
-        console.warn("No existing verification record:", err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-
-    fetchExistingVerification();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const selectedPlatform = PLATFORMS.find((p) => p.id === formData.primaryPlatform) || PLATFORMS[0];
-
-  const handleSubmit = async (e?: React.FormEvent, isFinalSubmit: boolean = false) => {
-    if (e) e.preventDefault();
-    setErrorMsg(null);
-
-    if (isFinalSubmit) {
-      if (!formData.primaryPlatform.trim() || !formData.channelUrl.trim()) {
-        toast.error("Please provide your primary creator channel/profile URL.");
-        return;
-      }
-      try {
-        new URL(formData.channelUrl.trim());
-      } catch {
-        toast.error("Please enter a valid URL (including https://).");
-        return;
-      }
-    } else {
-      if (!formData.channelUrl.trim()) {
-        toast.error("Please enter a Channel URL to save a draft.");
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const res = await fetch("/api/KYC/CreatorVerification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          primaryPlatform: formData.primaryPlatform.trim(),
-          channelUrl: formData.channelUrl.trim(),
-          estimatedAnnualIncome: formData.estimatedAnnualIncome,
-        }),
-      });
-
-      const rawText = await res.text();
-      let resData: any = {};
-      if (rawText && rawText.trim()) {
-        try {
-          resData = JSON.parse(rawText);
-        } catch {
-          resData = { msg: rawText };
-        }
-      }
-
-      const isSuccess =
-        res.ok &&
-        (resData.status === 0 || resData.status === "0" || resData.statusCode === 200);
-
-      if (!isSuccess) {
-        throw new Error(resData.msg || resData.message || "Failed to submit verification request.");
-      }
-
-      await refreshSummary();
-
-      if (isFinalSubmit) {
-        toast.success("KYC submission complete! Your profile is under review.");
-        router.push("/studio");
-      } else {
-        toast.success("Verification details saved as draft.");
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Connection error. Please try again.");
-      toast.error(err.message || "Failed to submit verification details.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   if (isLoading) {
     return <Loading />;
@@ -206,17 +102,15 @@ export default function KycStepFourPage() {
       isSubmitting={isSubmitting}
       backHref="/kyc/step-3"
       nextLabel="Submit Full KYC for Review"
-      onSaveDraft={() => handleSubmit(undefined, false)}
-      onSubmit={(e) => handleSubmit(e, true)}
+      onSaveDraft={() => submit(undefined, false)}
+      onSubmit={(e) => submit(e, true)}
     >
       {/* 1. Primary Platform Selection */}
       <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-outline-variant/60 pb-3">
           <div className="flex items-center gap-2">
             <Globe size={18} className="text-primary" />
-            <h2 className="text-sm font-bold text-on-surface">
-              Primary Channel or Broadcast Platform *
-            </h2>
+            <h2 className="text-sm font-bold text-on-surface">Primary Channel or Broadcast Platform *</h2>
           </div>
           <span className="text-[11px] font-semibold bg-surface-container px-2.5 py-0.5 rounded-full text-on-surface-variant">
             Audience Verification
@@ -237,7 +131,7 @@ export default function KycStepFourPage() {
                   isSelected
                     ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
                     : "border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low"
-                } ${isVerified ? "opacity-60 cursor-not-allowed" : ""}`}
+                } ${isLocked ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 <Icon size={20} />
                 <span className="text-xs font-semibold">{platform.label}</span>
@@ -246,7 +140,6 @@ export default function KycStepFourPage() {
           })}
         </div>
 
-        {/* Channel / Profile Link */}
         <div className="pt-2">
           <InputField
             label={`${selectedPlatform.label} Channel / Profile URL`}
@@ -257,11 +150,7 @@ export default function KycStepFourPage() {
             onChange={(e) => setFormData((p) => ({ ...p, channelUrl: e.target.value }))}
             name="channelUrl"
             hint="Must be publicly accessible and registered under your legal or studio alias."
-            rightIcon={
-              formData.channelUrl.startsWith("http") ? (
-                <ExternalLink size={16} className="text-tertiary" />
-              ) : undefined
-            }
+            rightIcon={formData.channelUrl.startsWith("http") ? <ExternalLink size={16} className="text-tertiary" /> : undefined}
           />
         </div>
       </div>
@@ -271,9 +160,7 @@ export default function KycStepFourPage() {
         <div className="flex items-center justify-between border-b border-outline-variant/60 pb-3">
           <div className="flex items-center gap-2">
             <TrendingUp size={18} className="text-primary" />
-            <h3 className="text-sm font-bold text-on-surface">
-              Estimated Annual Revenue &amp; Sponsorships (अपेक्षित आम्दानी)
-            </h3>
+            <h3 className="text-sm font-bold text-on-surface">Estimated Annual Revenue &amp; Sponsorships (अपेक्षित आम्दानी)</h3>
           </div>
           <span className="text-[11px] font-semibold bg-surface-container px-2.5 py-0.5 rounded-full text-on-surface-variant">
             NRB AML Bracket
@@ -294,7 +181,7 @@ export default function KycStepFourPage() {
                   isSelected
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low"
-                } ${isVerified ? "opacity-60 cursor-not-allowed" : ""}`}
+                } ${isLocked ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 <input
                   type="radio"

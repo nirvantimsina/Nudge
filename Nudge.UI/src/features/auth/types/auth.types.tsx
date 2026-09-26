@@ -35,12 +35,6 @@ export interface UserSessionData {
   permissions?: string[];
 }
 
-export interface ApiResponse<T> {
-  status: string;
-  msg: string;
-  data: T;
-}
-
 export interface AuthState {
   user: UserAuthData | null;
   isLoading: boolean;

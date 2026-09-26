@@ -1,32 +1,20 @@
 // src/lib/api-client.server.ts
 import { cookies } from "next/headers";
-import { ApiResponse } from "@/src/features/auth/types/auth.types";
-import { ApiServerError } from "./api-client";
+import { buildUrl, handleResponse } from "./api/envelop";
+import { SERVER_API_BASE_URL } from "@/src/lib/env";
 
 export const API_BASE_URL = "http://localhost:5043/api";
 
 export const serverApiClient = {
-  async get<TResponse>(endpoint: string): Promise<TResponse> {
+  async get<TResponse>(endpoint: string, params?: Record<string, string | number | boolean | undefined>): Promise<TResponse> {
     const cookieStore = await cookies();
-    const token = cookieStore.get("nudge_auth_token")?.value;
+    const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join("; ");
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(buildUrl(SERVER_API_BASE_URL, endpoint, params), {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        // Forward cookie directly in server requests
-        Cookie: token ? `nudge_auth_token=${token}` : "",
-      },
+      headers: { "Content-Type": "application/json", Cookie: cookieHeader },
       cache: "no-store",
     });
-
-    if (response.status === 204) return undefined as TResponse;
-
-    const envelope: ApiResponse<TResponse> = await response.json();
-    if (!response.ok || envelope.status !== "0") {
-      throw new ApiServerError(envelope.status ?? String(response.status), envelope.msg, response.status);
-    }
-
-    return envelope.data;
+    return handleResponse<TResponse>(response);
   },
 };

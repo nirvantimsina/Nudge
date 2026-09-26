@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@remotemerge/nepali-date-converter':
+        specifier: ^1.2.1
+        version: 1.2.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -468,6 +471,10 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@remotemerge/nepali-date-converter@1.2.1':
+    resolution: {integrity: sha512-RmeZIgaF6Oq8uP1HP7V7FUWVwOh6EBkdK2tBDobMYGipLpYnPD+YZZxAzc9HHiEXMoYzFbt8TYfkcZFTRiKwWQ==}
+    engines: {node: '>=18.0.0'}
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
@@ -2415,6 +2422,8 @@ snapshots:
       fastq: 1.20.3
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@remotemerge/nepali-date-converter@1.2.1': {}
 
   '@rtsao/scc@1.1.0': {}
 
