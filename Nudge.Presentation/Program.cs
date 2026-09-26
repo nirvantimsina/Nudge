@@ -8,6 +8,7 @@ using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Helpers;
 using Nudge.Infrastructure.Common;
 using Nudge.Infrastructure.Persistence;
+using Nudge.Infrastructure.Persistence.Seq;
 using Nudge.Infrastructure.Repositories;
 using Nudge.Infrastructure.Services;
 using Nudge.Presentation.Middleware;
@@ -36,7 +37,12 @@ try
 
     // Services
     builder.Services.AddSingleton<PermissionService>();
+    
+    // Infrastructure Services
     builder.Services.AddScoped<IGenericRepository, GenericRepository>();
+    builder.Services.AddScoped<IAnalyticsRepository, SeqAnalyticsRepository>();
+    builder.Services.Configure<SeqOptions>(builder.Configuration.GetSection(SeqOptions.SectionName));
+
 
     // Register HttpContextAccessor and the Scoped Creator Context
     builder.Services.AddHttpContextAccessor();

@@ -33,6 +33,7 @@ export function sendTelemetry(payload: AnalyticsPayload, useBeacon = false) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      credentials: 'include',
     }).catch((err) => console.debug('Telemetry skipped:', err));
   }
 }
