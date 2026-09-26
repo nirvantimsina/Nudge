@@ -1,7 +1,7 @@
-using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nudge.Application.Analytics.Queries;
 using Serilog;
 
 namespace Nudge.Presentation.Controllers.Analytics;
@@ -10,23 +10,9 @@ public class AnalyticsController(IMediator mediator) : ApiBaseController
 {
     [AllowAnonymous]
     // Adding a leading slash "/" bypasses ApiBaseController route layouts entirely
-    [HttpPost("/api/Analytics/Track")] 
-    public async Task<IActionResult> TrackEvent()
+    [HttpPost("Track")] 
+    public async Task<IActionResult> TrackEvent(ClientTelemetryRequest request)
     {
-        string rawJson = string.Empty;
-
-        using (var reader = new StreamReader(Request.Body))
-        {
-            rawJson = await reader.ReadToEndAsync();
-        }
-
-        if (string.IsNullOrWhiteSpace(rawJson)) return BadRequest();
-
-        var request = JsonSerializer.Deserialize<ClientTelemetryRequest>(rawJson, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
         if (request == null) return BadRequest();
 
         // If CurrentUserId is 0, they are unauthenticated (Anonymous)
@@ -52,6 +38,14 @@ public class AnalyticsController(IMediator mediator) : ApiBaseController
            .Information("Analytics Suite: {EventName} on {Url} by {UserName}", request.EventName, request.Url, identityUserName);
 
         return Ok();
+    }
+
+    [HttpGet("CreatorMetrics")]
+    public async Task<IActionResult> GetCreatorLinkMetrics([FromQuery] int daysAgo = 30)
+    {
+        var result = await mediator.Send(new GetCreatorMetricsQuery(daysAgo));
+
+        return HandleErrorOr(result);
     }
 }
 
