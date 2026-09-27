@@ -7,6 +7,7 @@ using Nudge.Application.Common.Behaviors;
 using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Helpers;
 using Nudge.Infrastructure.Common;
+using Nudge.Infrastructure.Persistence;
 using Nudge.Infrastructure.Persistence.Seq;
 using Nudge.Infrastructure.Repositories;
 using Nudge.Infrastructure.Services;

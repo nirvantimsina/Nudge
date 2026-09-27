@@ -2,6 +2,7 @@ using Dapper;
 using Microsoft.Extensions.Logging;
 using Nudge.Application.Common.Behaviors;
 using Nudge.Application.Common.Interfaces;
+using Nudge.Infrastructure.Persistence;
 using System.Data;
 
 namespace Nudge.Infrastructure.Repositories;

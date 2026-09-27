@@ -2,7 +2,7 @@ using Npgsql;
 using System.Data;
 using System.Data.Common;
 
-namespace Nudge.Infrastructure.Repositories;
+namespace Nudge.Infrastructure.Persistence;
 
 public class DbConnectionFactory : IDisposable, IAsyncDisposable
 {
@@ -13,6 +13,7 @@ public class DbConnectionFactory : IDisposable, IAsyncDisposable
         var builder = new NpgsqlDataSourceBuilder(connectionString);
 
         builder.EnableDynamicJson();
+        builder.ConnectionStringBuilder.NoResetOnClose = true;
 
         _dataSource = builder.Build();
     }
