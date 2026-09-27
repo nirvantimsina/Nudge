@@ -5,7 +5,7 @@ services:
     image: postgres:latest
     container_name: postgres-database
     ports:
-      - "5444:5432"
+      - "5444:5432" # Direct host access for GUI tools if needed
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -15,6 +15,40 @@ services:
       - ./Nudge.DB:/docker-entrypoint-initdb.d
     networks:
       - nudge-network
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: nudge-pgbouncer
+    restart: unless-stopped
+    ports:
+      - "6432:5432" # Host access to PgBouncer
+    environment:
+      # Target Database Details
+      DB_HOST: postgres-db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: nudge
+
+      # Pooling Configuration
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      AUTH_TYPE: scram-sha-256
+      ADMIN_USERS: postgres
+
+      # Critical parameter for Npgsql / ADO.NET
+      IGNORE_STARTUP_PARAMETERS: extra_float_digits
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - nudge-network
+    depends_on:
+      - postgres-db
 
   seq-analytics:
     image: datalust/seq:latest
@@ -40,14 +74,25 @@ services:
       - "5043:5043"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Nudge_DB=Host=postgres-db;Port=5432;Database=nudge;Username=postgres;Password=password;
+      # Connected through pgbouncer on internal port 5432 with Npgsql flags
+      - ConnectionStrings__Nudge_DB=Host=pgbouncer;Port=5432;Database=nudge;Username=postgres;Password=password;Max Auto Prepare=0;No Reset On Close=true;
       - Serilog__WriteTo__1__Args__serverUrl=http://seq-analytics:80
     volumes:
       - .:/src
+      - /src/Nudge.Presentation/bin
+      - /src/Nudge.Presentation/obj
+      - /src/Nudge.Application/bin
+      - /src/Nudge.Application/obj
+      - /src/Nudge.Infrastructure/bin
+      - /src/Nudge.Infrastructure/obj
+      - /src/Nudge.Domain/bin
+      - /src/Nudge.Domain/obj
+      - /src/Nudge.Shared/bin
+      - /src/Nudge.Shared/obj
     networks:
       - nudge-network
     depends_on:
-      - postgres-db
+      - pgbouncer
       - seq-analytics
 
   nudge-ui:
@@ -78,3 +123,5 @@ networks:
   nudge-network:
     name: nudge-network
     driver: bridge
+
+# docker compose up -d --build

@@ -1,15 +1,21 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy dependency configs first to leverage Docker build cache
-COPY package*.json ./
+# Install libc compatibility layer for Next.js native binaries on Alpine
+RUN apk add --no-cache libc6-compat
+
+# Cache package manifests first
+COPY package.json package-lock.json* ./
+
 RUN npm install
 
-# Copy the rest of the Next.js client files
+# Copy application files
 COPY . .
 
-# Expose NextJS development port
 EXPOSE 3000
 
-# Bind Next.js dev server to all interfaces so it's reachable from the host
+# Next.js telemetry disable (speeds up startup) + file-watcher polling for containers
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV WATCHPACK_POLLING=true
+
 CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0"]

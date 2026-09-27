@@ -1,25 +1,27 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dev
 WORKDIR /src
 
-# 2. Copy all clean architecture layer definition structures
+# 1. Copy solution file (if present) and project manifests to leverage layer caching
+COPY *.sln ./
 COPY ["Nudge.Presentation/Nudge.Presentation.csproj", "Nudge.Presentation/"]
 COPY ["Nudge.Application/Nudge.Application.csproj", "Nudge.Application/"]
 COPY ["Nudge.Infrastructure/Nudge.Infrastructure.csproj", "Nudge.Infrastructure/"]
 COPY ["Nudge.Domain/Nudge.Domain.csproj", "Nudge.Domain/"]
 COPY ["Nudge.Shared/Nudge.Shared.csproj", "Nudge.Shared/"]
 
-# 3. Restore all project dependencies at once
+# 2. Restore all project dependencies
 RUN dotnet restore "Nudge.Presentation/Nudge.Presentation.csproj"
 
-# 4. Copy the full source code directories into the container filesystem
+# 3. Copy remaining source
 COPY . .
 
-# 5. Move inside the presentation context folder
 WORKDIR "/src/Nudge.Presentation"
 
 EXPOSE 5043
 
-# 6. Bind to all interfaces on the correct port, use dotnet watch for dev hot-reload
 ENV ASPNETCORE_URLS=http://0.0.0.0:5043
 ENV ASPNETCORE_ENVIRONMENT=Development
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--project", "Nudge.Presentation.csproj"]
+# Polling watch prevents missed file change events across Docker host-container volume boundaries
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
+
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--non-interactive", "--project", "Nudge.Presentation.csproj"]
