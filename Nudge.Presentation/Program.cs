@@ -7,7 +7,6 @@ using Nudge.Application.Common.Behaviors;
 using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Helpers;
 using Nudge.Infrastructure.Common;
-using Nudge.Infrastructure.Persistence;
 using Nudge.Infrastructure.Persistence.Seq;
 using Nudge.Infrastructure.Repositories;
 using Nudge.Infrastructure.Services;
@@ -53,8 +52,6 @@ try
 
 
     // Register Dapper type handlers for DateOnly
-    SqlMapper.AddTypeHandler(new DateTimeHandler());
-    SqlMapper.AddTypeHandler(new NullableDateTimeHandler());
     SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
     SqlMapper.AddTypeHandler(new NullableDateOnlyTypeHandler());
 
@@ -78,8 +75,6 @@ try
         cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CreatorContextBehavior<,>));
     });
 
-
-    builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IGenericRepository).Assembly));
 
     // Connection string
     var connectionString = builder.Configuration

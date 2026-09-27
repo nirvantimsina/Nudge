@@ -5,18 +5,16 @@ namespace Nudge.Application.Common.Extensions;
 
 public static class DatabaseResultExtensions
 {
-    public static ErrorOr<T> ToDbResult<T>(this T? result) where T : class
+    public static ErrorOr<T> ToDbResult<T>(this T? result) where T : StatusResponse
     {
         if (result == null)
         {
             return Error.NotFound(description: "No record received from the server!");
         }
 
-        dynamic dynamicResult = result;
-
-        if (dynamicResult.Status != "0")
+        if (result.Status != "0" && result.Status != null)
         {
-            return Error.Validation(code: dynamicResult.Status, description: dynamicResult.MSG);
+            return Error.Validation(code: result.Status, description: result.MSG ?? "Validation failed.");
         }
 
         return result;
