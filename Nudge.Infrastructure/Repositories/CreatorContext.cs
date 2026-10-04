@@ -1,4 +1,3 @@
-// Nudge.Infrastructure/Services/CreatorContext.cs
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Nudge.Application.Common.Interfaces;
@@ -29,10 +28,10 @@ public class CreatorContext : ICreatorContext
     {
         get
         {
-            var claim = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var claim = User?.FindFirst("userid")?.Value;
             return int.TryParse(claim, out var id) ? id : 0;
         }
     }
 
-    public bool IsAuthenticated => CreatorId > 0;
+    public bool IsAuthenticated => User?.Identity?.IsAuthenticated == true && CreatorId > 0;
 }

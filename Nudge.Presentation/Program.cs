@@ -11,6 +11,7 @@ using Nudge.Infrastructure.Persistence;
 using Nudge.Infrastructure.Persistence.Seq;
 using Nudge.Infrastructure.Repositories;
 using Nudge.Infrastructure.Services;
+using Nudge.Presentation.Extensions;
 using Nudge.Presentation.Middleware;
 using Scalar.AspNetCore;
 using Serilog;
@@ -37,12 +38,11 @@ try
 
     // Services
     builder.Services.AddSingleton<PermissionService>();
-    
+
     // Infrastructure Services
     builder.Services.AddScoped<IGenericRepository, GenericRepository>();
     builder.Services.AddScoped<IAnalyticsRepository, SeqAnalyticsRepository>();
-    builder.Services.Configure<SeqOptions>(builder.Configuration.GetSection(SeqOptions.SectionName));
-
+    builder.Services.Configure<Nudge.Infrastructure.Persistence.Seq.SeqOptions>(builder.Configuration.GetSection(Nudge.Infrastructure.Persistence.Seq.SeqOptions.SectionName));
 
     // Register HttpContextAccessor and the Scoped Creator Context
     builder.Services.AddHttpContextAccessor();
@@ -51,6 +51,8 @@ try
     // Register the provider as Scoped to isolate threads/HTTP requests
     builder.Services.AddScoped<ICancellationTokenProvider, CancellationTokenProvider>();
 
+    // Register Health Checks
+    builder.Services.AddAppHealthChecks(builder.Configuration);
 
     // Register Dapper type handlers for DateOnly
     SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
@@ -78,9 +80,9 @@ try
 
 
     // Connection string
-    var connectionString = builder.Configuration
+    var npgsqlConnectionString = builder.Configuration
         .GetConnectionString("Nudge_DB")!;
-    builder.Services.AddSingleton(new DbConnectionFactory(connectionString));
+    builder.Services.AddSingleton(new DbConnectionFactory(npgsqlConnectionString));
 
     // Dapper JSON column type handlers
     DapperTypeHandlers.Register();
@@ -116,24 +118,31 @@ try
         });
     });
 
-    // JWT Auth with HttpOnly Cookie extraction
-    var secretKey = jwtSettings.SecretKey ?? throw new InvalidOperationException("JWT SecretKey is missing in configuration.");
+    var zitadelIssuer = builder.Configuration["Zitadel:Issuer"] ?? "http://localhost:8080";
+    var zitadelClientId = builder.Configuration["Zitadel:ClientId"];
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
+            options.Authority = zitadelIssuer;
+            options.RequireHttpsMetadata = builder.Environment.IsProduction();
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidIssuer = zitadelIssuer,
+
+                // Disable strict audience matching during local development
+                ValidateAudience = false,
+
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings.Issuer,
-                ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+
+                NameClaimType = "name",
+                RoleClaimType = "roleId",
+                ClockSkew = TimeSpan.FromMinutes(1)
             };
 
-            // Reads the JWT from the HttpOnly cookie
             options.Events = new JwtBearerEvents
             {
                 OnMessageReceived = context =>
@@ -142,6 +151,13 @@ try
                     {
                         context.Token = token;
                     }
+                    return Task.CompletedTask;
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"[AUTH FAILURE] {context.Exception.GetType().Name}: {context.Exception.Message}");
+                    Console.ResetColor();
                     return Task.CompletedTask;
                 }
             };
@@ -191,6 +207,7 @@ try
     app.UseAuthorization();
 
     app.MapStaticAssets();
+    app.MapAppHealthChecks();
     app.MapControllers();
 
     app.Run();

@@ -308,7 +308,7 @@ export function NavBar() {
           ) : (
             <div className="flex items-center gap-1.5">
               <Link
-                href="/auth"
+                href="/api/auth/login"
                 className="hidden sm:inline-block px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-on-surface hover:text-primary transition-colors active:scale-95"
               >
                 Log In
@@ -392,7 +392,7 @@ export function NavBar() {
           {!isAuthenticated && (
             <div className="pt-2 border-t border-outline-variant/30">
               <Link
-                href="/auth"
+                href="/api/auth/login"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full block text-center py-2 px-4 rounded-xl border border-outline-variant text-xs font-bold text-on-surface hover:bg-surface-container transition active:scale-95"
               >

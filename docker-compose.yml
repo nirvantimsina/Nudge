@@ -124,4 +124,25 @@ networks:
     name: nudge-network
     driver: bridge
 
+    nudge-zitadel:
+    image: ghcr.io/zitadel/zitadel:latest
+    container_name: nudge-zitadel
+    command: 'start-from-init --masterkey "MasterKeyNeedsToBe32CharactersLong!" --tlsMode disabled'
+    environment:
+      - ZITADEL_DATABASE_POSTGRES_HOST=postgres-database
+      - ZITADEL_DATABASE_POSTGRES_PORT=5432
+      - ZITADEL_DATABASE_POSTGRES_DATABASE=zitadel
+      - ZITADEL_DATABASE_POSTGRES_USER_USERNAME=sa
+      - ZITADEL_DATABASE_POSTGRES_USER_PASSWORD=password
+      - ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE=disable
+      - ZITADEL_EXTERNALSECURE=false
+      - ZITADEL_EXTERNALPORT=8080
+      - ZITADEL_EXTERNALDOMAIN=localhost
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-database
+    networks:
+      - nudge-network
+
 # docker compose up -d --build

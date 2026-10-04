@@ -1,8 +1,10 @@
+using ErrorOr;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nudge.Application.Features.Auth.Commands.Login;
 using Nudge.Application.Features.Auth.Commands.SignUp;
+using Nudge.Application.Features.Auth.Commands.SyncUser;
 using Nudge.Application.Features.Auth.Queries.GetMenuList;
 using Nudge.Application.Models.Auth.Response;
 using Nudge.Presentation.Extensions; // <-- Use extension methods
@@ -66,16 +68,35 @@ namespace Nudge.Presentation.Controllers
         }
 
         [HttpGet("Me")]
-        public IActionResult GetCurrentUserSession()
+        public async Task<IActionResult> GetCurrentUserSession(CancellationToken ct)
         {
-            return Ok(ApiResponse<object>.Ok(new
+            var subjectId = User.FindFirst("sub")?.Value 
+                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                        ?? string.Empty;
+
+            var email = User.FindFirst("email")?.Value 
+                    ?? User.FindFirst(ClaimTypes.Email)?.Value 
+                    ?? string.Empty;
+
+            var userName = User.FindFirst("preferred_username")?.Value 
+                        ?? User.FindFirst(ClaimTypes.Name)?.Value;
+
+            var name = User.FindFirst("name")?.Value;
+
+            var command = new SyncUserSessionCommand(subjectId, email, userName, name);
+            
+            var result = await mediator.Send(command, ct);
+
+            if (result.IsError)
             {
-                userId = CurrentUserId,
-                userName = CurrentUserName,
-                roleId = CurrentRoleId,
-                creatorId = CurrentCreatorId, // Reads "creatorid" claim from ApiBaseController
-                permissions = CurrentPermissions
-            }));
+                var firstError = result.FirstError;
+                return StatusCode(
+                    firstError.Type == ErrorType.Validation ? StatusCodes.Status400BadRequest : StatusCodes.Status401Unauthorized,
+                    new { status = "1", msg = firstError.Description, data = (object?)null }
+                );
+            }
+
+            return Ok(ApiResponse<UserSessionDto>.Ok(result.Value));
         }
 
         [HttpGet("MenuList")]

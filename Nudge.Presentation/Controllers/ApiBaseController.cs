@@ -15,8 +15,8 @@ namespace Nudge.Presentation.Controllers
         {
             get
             {
-                var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                return int.TryParse(claimValue, out var id) ? id : 0;
+                var claim = User.FindFirst("userid")?.Value;
+                return int.TryParse(claim, out var id) ? id : 0;
             }
         }
 
