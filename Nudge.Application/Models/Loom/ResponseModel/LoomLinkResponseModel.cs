@@ -1,3 +1,4 @@
+using Nudge.Application.Models.Common.Response;
 using Nudge.Domain.Models;
 
 namespace Nudge.Application.Models.Loom.ResponseModel;
@@ -11,6 +12,7 @@ public class LoomLinkResponseModel : StatusResponse
     public string? CategoryName { get; set; }
     public bool IsVerified { get; set; }
     public List<LoomLinkItem> LinksJson { get; set; } = new();
+    public List<TierDto> Tiers { get; set; } = new();
 }
 
 public class LoomLinkItem

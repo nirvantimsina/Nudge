@@ -1,6 +1,6 @@
 using Dapper;
-using Nudge.Application.Models.Loom.ResponseModel; // <-- Add this namespace
-using Nudge.Application.Models.Public.Creators.ResponseModel;
+using Nudge.Application.Models.Common.Response;
+using Nudge.Application.Models.Loom.ResponseModel;
 
 namespace Nudge.Infrastructure.Common;
 
