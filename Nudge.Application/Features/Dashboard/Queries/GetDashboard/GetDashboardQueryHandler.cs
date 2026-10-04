@@ -5,10 +5,15 @@ using Nudge.Application.Common.Extensions;
 using System.Data;
 using Nudge.Application.Common.Interfaces;
 
-public class GetDashboardQuery : IRequest<ErrorOr<DashboardResponseModel>>;
+namespace Nudge.Application.Features.Dashboard.Queries.GetDashboard;
 
-namespace Nudge.Application.Features.Dashboard.Queries.GetDashboard
+public class GetDashboardQuery : IRequest<ErrorOr<DashboardResponseModel>>, ICacheableQuery
 {
+    public string CacheKey => "dashboard:user_summary";
+    public bool IsCreatorScoped => true;
+    public TimeSpan? Expiration => TimeSpan.FromMinutes(15);
+};
+
     public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, ErrorOr<DashboardResponseModel>>
     {
         private readonly IGenericRepository _repo;
@@ -30,6 +35,3 @@ namespace Nudge.Application.Features.Dashboard.Queries.GetDashboard
             return result.ToDbResult();
         }
     }
-}
-
-

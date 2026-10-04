@@ -26,7 +26,7 @@ public static class HealthCheckExtensions
         var redisConnection = configuration.GetConnectionString("Redis") 
             ?? "localhost:6379,abortConnect=false";
 
-        var seqUrl = configuration.GetValue<string>($"{Infrastructure.Persistence.Seq.SeqOptions.SectionName}:ServerUrl");
+        var seqUrl = configuration.GetValue<string>($"{SeqOptions.SectionName}:ServerUrl");
             
         var zitadelIssuer = configuration["Zitadel:Issuer"] ?? "http://localhost:8080";
 

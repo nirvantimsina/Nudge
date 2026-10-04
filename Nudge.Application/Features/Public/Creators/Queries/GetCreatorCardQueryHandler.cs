@@ -7,7 +7,11 @@ using Nudge.Application.Models.Public.Creators.ResponseModel;
 
 namespace Nudge.Application.Features.Public.Creators.Queries.GetCreatorCard;
 
-public record GetCreatorCardQuery(string? slug) : IRequest<ErrorOr<CreatorCardResponseModel>>;
+public record GetCreatorCardQuery(string? slug) : IRequest<ErrorOr<CreatorCardResponseModel>>, ICacheableQuery
+{
+    public string CacheKey => $"public:get_creator_card:{slug}";
+    public TimeSpan? Expiration => TimeSpan.FromMinutes(15);
+};
 
 public class GetCreatorCardQueryHandler : IRequestHandler<GetCreatorCardQuery, ErrorOr<CreatorCardResponseModel>>
 {

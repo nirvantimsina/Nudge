@@ -5,7 +5,12 @@ using Nudge.Application.Models.Creator.ResponseModel;
 using System.Data;
 namespace Nudge.Application.Features.Creator.Queries.GetSummary;
 
-public record GetCreatorSummaryQuery : IRequest<ErrorOr<CreatorSummaryResponseModel>>;
+public record GetCreatorSummaryQuery : IRequest<ErrorOr<CreatorSummaryResponseModel>>, ICacheableQuery
+{
+    public string CacheKey => "creator:get_summary";
+    public bool IsCreatorScoped => true;
+    public TimeSpan? Expiration => TimeSpan.FromMinutes(15);
+};
 
 public class GetCreatorSummaryQueryHandler : IRequestHandler<GetCreatorSummaryQuery, ErrorOr<CreatorSummaryResponseModel>>
 {

@@ -7,7 +7,11 @@ using Nudge.Application.Models.Loom.ResponseModel;
 
 namespace Nudge.Application.Features.Loom.Public.Queries.GetCreatorBySlug;
 
-public record GetCreatorBySlugQuery(string? slug) : IRequest<ErrorOr<LoomLinkResponseModel>>;
+public record GetCreatorBySlugQuery(string? slug) : IRequest<ErrorOr<LoomLinkResponseModel>>, ICacheableQuery
+{
+    public string CacheKey => $"loom:get_creator_by_slug:{slug}";
+    public TimeSpan? Expiration => TimeSpan.FromMinutes(15);
+};
 
 public class GetCreatorBySlugQueryHandler : IRequestHandler<GetCreatorBySlugQuery, ErrorOr<LoomLinkResponseModel>>
 {

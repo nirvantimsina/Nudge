@@ -36,13 +36,22 @@ try
     builder.Services.AddSingleton(jwtSettings);
     builder.Services.AddSingleton<JWTHelper>();
 
+    // Redis Configurations
+    var redisConn = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379,abortConnect=false";
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConn;
+        options.InstanceName = "nudge:";
+    });
+    builder.Services.AddSingleton<ICacheService, RedisCacheService>();
+
     // Services
     builder.Services.AddSingleton<PermissionService>();
 
     // Infrastructure Services
     builder.Services.AddScoped<IGenericRepository, GenericRepository>();
     builder.Services.AddScoped<IAnalyticsRepository, SeqAnalyticsRepository>();
-    builder.Services.Configure<Nudge.Infrastructure.Persistence.Seq.SeqOptions>(builder.Configuration.GetSection(Nudge.Infrastructure.Persistence.Seq.SeqOptions.SectionName));
+    builder.Services.Configure<SeqOptions>(builder.Configuration.GetSection(SeqOptions.SectionName));
 
     // Register HttpContextAccessor and the Scoped Creator Context
     builder.Services.AddHttpContextAccessor();
@@ -76,6 +85,9 @@ try
 
         // Context Behavior hydrates domain context parameters
         cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CreatorContextBehavior<,>));
+
+        // Caching Behavior for caching only the successfull queries
+        cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
     });
 
 

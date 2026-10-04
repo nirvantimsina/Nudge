@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ErrorOr;
 using Nudge.Application.Models.Dashboard.ResponseModel;
+using Nudge.Application.Features.Dashboard.Queries.GetDashboard;
 
 namespace Nudge.Presentation.Controllers
 {

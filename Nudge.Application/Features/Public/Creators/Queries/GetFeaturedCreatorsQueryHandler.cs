@@ -7,7 +7,11 @@ using Nudge.Application.Models.Public.Creators.ResponseModel;
 
 namespace Nudge.Application.Features.Public.Creators.Queries.GetFeaturedCreators;
 
-public record GetFeaturedCreatorsQuery(string? Category) : IRequest<ErrorOr<List<FeaturedCreatorsResponseModel>>>;
+public record GetFeaturedCreatorsQuery(string? Category) : IRequest<ErrorOr<List<FeaturedCreatorsResponseModel>>>, ICacheableQuery
+{
+    public string CacheKey => $"public:get_featured_creators:{Category}";
+    public TimeSpan? Expiration => TimeSpan.FromMinutes(15);
+};
 
 public class GetFeaturedCreatorsQueryHandler : IRequestHandler<GetFeaturedCreatorsQuery, ErrorOr<List<FeaturedCreatorsResponseModel>>>
 {
