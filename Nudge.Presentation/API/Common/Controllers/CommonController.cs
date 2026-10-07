@@ -13,9 +13,6 @@ public class DropdownController(IMediator mediator) : ApiBaseController
         var query = new GetDropdownItemQuery(flag);
         var result = await mediator.Send(query);
 
-        return result.Match<IActionResult>(
-            data => Ok(ApiResponse<List<Shared.Models.DropdownListModel>>.Ok(data)),
-            errors => BadRequest(ApiResponse.Fail(errors.First().Description, errors.First().Code))
-        );
+        return HandleErrorOr(result);
     }
 }

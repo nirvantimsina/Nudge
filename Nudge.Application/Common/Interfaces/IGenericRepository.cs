@@ -10,34 +10,34 @@ public interface IGenericRepository
         string storedProcedure,
         Func<SqlMapper.GridReader, Task<T>> map,
         object? parameters = null,
-        CommandType commandType = CommandType.StoredProcedure);
+        CommandType commandType = CommandType.StoredProcedure,
+        CancellationToken cancellationToken = default);
 
     // Multiple rows, single table
     Task<IEnumerable<T>> QueryAsync<T>(
         string storedProcedure,
         object? parameters = null,
-        CommandType commandType = CommandType.StoredProcedure);
+        CommandType commandType = CommandType.StoredProcedure,
+        CancellationToken cancellationToken = default);
 
     // Single row and null if not found
     Task<T?> QueryFirstOrDefaultAsync<T>(
         string storedProcedure,
         object? parameters = null,
-        CommandType commandType = CommandType.StoredProcedure);
+        CommandType commandType = CommandType.StoredProcedure,
+        CancellationToken cancellationToken = default);
 
     // No return, just used for inserts, updates and deletes
     Task ExecuteAsync(
         string storedProcedure,
         object? parameters = null,
-        CommandType commandType = CommandType.StoredProcedure);
+        CommandType commandType = CommandType.StoredProcedure,
+        CancellationToken cancellationToken = default);
 
     // For returning single scalar values
     Task<T?> ExecuteScalarAsync<T>(
         string storedProcedure,
         object? parameters = null,
-        CommandType commandType = CommandType.StoredProcedure);
+        CommandType commandType = CommandType.StoredProcedure,
+        CancellationToken cancellationToken = default);
 }
-
-
-
-
-

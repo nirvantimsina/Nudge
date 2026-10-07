@@ -7,16 +7,17 @@ type CursorType = "default" | "pointer" | "text";
 export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [hasMoved, setHasMoved] = useState(false);
   const [cursorType, setCursorType] = useState<CursorType>("default");
+  const hasMovedRef = useRef(false);
 
   useEffect(() => {
-    // 1. Guard touch devices immediately before mounting
+    // 1. Strict mobile/touch detection
     const isTouchDevice =
+      window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
       "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0 ||
-      window.matchMedia("(pointer: coarse)").matches;
+      navigator.maxTouchPoints > 0;
 
+    // Do NOT initialize on phones or tablets
     if (isTouchDevice) {
       return;
     }
@@ -25,34 +26,37 @@ export function CustomCursor() {
     document.body.classList.add("custom-cursor-active");
 
     const onMouseMove = (e: MouseEvent) => {
-      if (!hasMoved) setHasMoved(true);
+      if (!cursorRef.current) return;
 
-      if (cursorRef.current) {
-        const target = e.target as HTMLElement | null;
-        const isTextInput = Boolean(
-          target?.closest(
-            "input:not([type='button']):not([type='submit']):not([type='checkbox']):not([type='radio']), textarea, [contenteditable='true']"
-          )
-        );
-        const isClickable = Boolean(
-          target?.closest(
-            "a, button, [role='button'], input[type='button'], input[type='submit'], select, [data-cursor='pointer']"
-          )
-        );
-
-        let offsetX = -2.5;
-        let offsetY = -2;
-
-        if (isTextInput) {
-          offsetX = -4.5;
-          offsetY = -7.5;
-        } else if (isClickable) {
-          offsetX = -4;
-          offsetY = -1;
-        }
-
-        cursorRef.current.style.transform = `translate3d(${e.clientX + offsetX}px, ${e.clientY + offsetY}px, 0)`;
+      if (!hasMovedRef.current) {
+        hasMovedRef.current = true;
+        cursorRef.current.style.opacity = "1";
       }
+
+      const target = e.target as HTMLElement | null;
+      const isTextInput = Boolean(
+        target?.closest(
+          "input:not([type='button']):not([type='submit']):not([type='checkbox']):not([type='radio']), textarea, [contenteditable='true']"
+        )
+      );
+      const isClickable = Boolean(
+        target?.closest(
+          "a, button, [role='button'], input[type='button'], input[type='submit'], select, [data-cursor='pointer']"
+        )
+      );
+
+      let offsetX = -2.5;
+      let offsetY = -2;
+
+      if (isTextInput) {
+        offsetX = -4.5;
+        offsetY = -7.5;
+      } else if (isClickable) {
+        offsetX = -4;
+        offsetY = -1;
+      }
+
+      cursorRef.current.style.transform = `translate3d(${e.clientX + offsetX}px, ${e.clientY + offsetY}px, 0)`;
     };
 
     const onMouseOver = (e: MouseEvent) => {
@@ -84,14 +88,14 @@ export function CustomCursor() {
     };
 
     window.addEventListener("mousemove", onMouseMove, { passive: true });
-    window.addEventListener("mouseover", onMouseOver);
+    window.addEventListener("mouseover", onMouseOver, { passive: true });
 
     return () => {
       document.body.classList.remove("custom-cursor-active");
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseover", onMouseOver);
     };
-  }, [hasMoved]);
+  }, []); // Run ONCE on mount
 
   if (!isMounted) return null;
 
@@ -101,9 +105,9 @@ export function CustomCursor() {
       aria-hidden="true"
       style={{
         transform: "translate3d(-100px, -100px, 0)",
-        opacity: hasMoved ? 1 : 0,
+        opacity: 0,
       }}
-      className="pointer-events-none fixed top-0 left-0 z-[2147483647] will-change-transform"
+      className="pointer-events-none fixed top-0 left-0 z-[2147483647] will-change-transform transition-opacity duration-150"
     >
       {/* 1. COMPACT TEXT I-BEAM CURSOR */}
       {cursorType === "text" && (

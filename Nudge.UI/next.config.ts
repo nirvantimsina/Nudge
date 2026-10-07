@@ -33,7 +33,18 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      new URL("https://avatar.canva.com/**"),
+      {
+        protocol: 'https',
+        hostname: 'avatar.canva.com',
+        port: '',
+        pathname: '/**', // 💎 '/**' matches all nested image paths recursively
+      },
+      {
+        protocol: 'https',
+        hostname: 's6.imgcdn.dev',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

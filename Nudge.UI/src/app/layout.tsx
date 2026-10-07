@@ -5,6 +5,7 @@ import { AuthProvider } from "../features/auth/hooks/use.auth.hook";
 import { ContextMenu } from "../components/public/common/ContextMenu";
 import { ConsoleEasterEgg } from "../components/public/eastereggs/ConsoleEasterEgg";
 import { ToastContainer } from "../components/common/ToastContainer";
+import AnalyticsTracker from "../components/AnalyticsTracker";
 
 export const metadata: Metadata = {
   title: "Nudge | Nepal's Creator Patronage Platform",
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -24,13 +25,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-surface text-on-surface font-body-md antialiased min-h-screen flex flex-col selection:bg-primary/20 selection:text-primary">
-      <ConsoleEasterEgg />
-      <CustomCursor />
-      <AuthProvider >
-        <ContextMenu />
-        {children}
-        <ToastContainer />
-      </AuthProvider>
+        <ConsoleEasterEgg />
+        <CustomCursor />
+        <AuthProvider >
+          <ContextMenu />
+          <AnalyticsTracker />
+          {children}
+          <ToastContainer />
+        </AuthProvider>
       </body>
     </html>
   );

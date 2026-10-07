@@ -3,37 +3,27 @@ using Dapper;
 
 namespace Nudge.Infrastructure.Common;
 
-public class DateOnlyTypeHandler : SqlMapper.TypeHandler<DateOnly>
+/// <summary>
+/// Dapper type handler to map PostgreSQL 'DATE' columns to .NET 6+ 'DateOnly'.
+/// </summary>
+public sealed class DateOnlyTypeHandler : SqlMapper.TypeHandler<DateOnly>
 {
     public override void SetValue(IDbDataParameter parameter, DateOnly value)
     {
         parameter.DbType = DbType.Date;
-        parameter.Value = value;
+        // Setting as DateTime or DateOnly depends on Npgsql version; 
+        // passing DateOnly directly works natively with Npgsql 6+, while ToDateTime ensures ADO.NET fallback compatibility.
+        parameter.Value = value.ToDateTime(TimeOnly.MinValue);
     }
 
-    public override DateOnly Parse(object value) => value switch
+    public override DateOnly Parse(object value)
     {
-        DateOnly dateOnly => dateOnly,
-        DateTime dateTime => DateOnly.FromDateTime(dateTime),
-        string str when DateOnly.TryParse(str, out var parsed) => parsed,
-        _ => throw new InvalidCastException($"Cannot cast {value?.GetType().FullName ?? "null"} to DateOnly")
-    };
-}
-
-public class NullableDateOnlyTypeHandler : SqlMapper.TypeHandler<DateOnly?>
-{
-    public override void SetValue(IDbDataParameter parameter, DateOnly? value)
-    {
-        parameter.DbType = DbType.Date;
-        parameter.Value = value.HasValue ? value.Value : DBNull.Value;
+        return value switch
+        {
+            DateOnly dateOnly => dateOnly,
+            DateTime dateTime => DateOnly.FromDateTime(dateTime),
+            string str when DateOnly.TryParse(str, out var parsedDate) => parsedDate,
+            _ => throw new DataException($"Cannot convert database value of type '{value.GetType().FullName}' to DateOnly.")
+        };
     }
-
-    public override DateOnly? Parse(object value) => value switch
-    {
-        null or DBNull => null,
-        DateOnly dateOnly => dateOnly,
-        DateTime dateTime => DateOnly.FromDateTime(dateTime),
-        string str when DateOnly.TryParse(str, out var parsed) => parsed,
-        _ => throw new InvalidCastException($"Cannot cast {value.GetType().FullName} to Nullable<DateOnly>")
-    };
 }

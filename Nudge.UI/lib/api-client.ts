@@ -1,5 +1,5 @@
 // src/lib/api-client.ts
-import { ApiResponse } from "@/src/features/auth/types/auth.types";
+import { ApiResponse } from "@/src/types/api.types";
 
 export const API_BASE_URL = "http://localhost:5043/api";
 

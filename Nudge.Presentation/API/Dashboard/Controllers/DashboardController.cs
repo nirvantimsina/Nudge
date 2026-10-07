@@ -1,9 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Nudge.Application.Features.Dashboard.Queries.GetDashboard;
 using ErrorOr;
 using Nudge.Application.Models.Dashboard.ResponseModel;
-using Nudge.Shared.Wrappers;
 
 namespace Nudge.Presentation.Controllers
 {

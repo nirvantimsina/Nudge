@@ -28,7 +28,18 @@ export function ContextMenu() {
   const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
+    // 1. Bail out completely on touch devices (phones/tablets)
+    const isTouchDevice =
+      window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0;
+
+    if (isTouchDevice) {
+      return;
+    }
+
     const handleContextMenu = (e: MouseEvent) => {
+      // Don't override if target has native context menu needs (e.g. text inputs if desired)
       e.preventDefault();
 
       const selection = window.getSelection()?.toString().trim() || "";
@@ -49,8 +60,7 @@ export function ContextMenu() {
       setIsOpen(true);
     };
 
-    const handlePointerDown = (e: MouseEvent) => {
-      // Left-click outside closes menu; ignore right-clicks so context menu position updates smoothly
+    const handleClickOutside = (e: MouseEvent) => {
       if (
         e.button !== 2 &&
         menuRef.current &&
@@ -64,13 +74,14 @@ export function ContextMenu() {
       if (e.key === "Escape") setIsOpen(false);
     };
 
-    document.addEventListener("contextmenu", handleContextMenu, true);
-    document.addEventListener("pointerdown", handlePointerDown);
+    // Use regular bubbling (false), NOT capture phase (true)
+    document.addEventListener("contextmenu", handleContextMenu, false);
+    document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("contextmenu", handleContextMenu, true);
-      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("contextmenu", handleContextMenu, false);
+      document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);

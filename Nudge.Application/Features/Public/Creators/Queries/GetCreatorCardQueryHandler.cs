@@ -1,6 +1,7 @@
 using System.Data;
 using ErrorOr;
 using MediatR;
+using Nudge.Application.Common.Extensions;
 using Nudge.Application.Common.Interfaces;
 using Nudge.Application.Models.Public.Creators.ResponseModel;
 
@@ -11,7 +12,6 @@ public record GetCreatorCardQuery(string? slug) : IRequest<ErrorOr<CreatorCardRe
 public class GetCreatorCardQueryHandler : IRequestHandler<GetCreatorCardQuery, ErrorOr<CreatorCardResponseModel>>
 {
     private readonly IGenericRepository _repo;
-
     public GetCreatorCardQueryHandler(IGenericRepository repo)
     {
         _repo = repo;
@@ -25,14 +25,6 @@ public class GetCreatorCardQueryHandler : IRequestHandler<GetCreatorCardQuery, E
             commandType: CommandType.Text
         );
 
-        if (result is null)
-        {
-            return Error.NotFound(
-                code: "Creator.NotFound",
-                description: $"The creator profile matching handle '{request.slug}' could not be found."
-            );
-        }
-
-        return result;
+        return result.ToDbResult();
     }
 }

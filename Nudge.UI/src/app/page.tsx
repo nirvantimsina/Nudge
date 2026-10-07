@@ -27,11 +27,8 @@ export default function HomePage() {
         <section className="relative pt-space-xl md:pt-space-3xl pb-space-2xl px-space-md md:px-margin-tablet lg:px-margin-desktop max-w-7xl mx-auto z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
             <div className="lg:col-span-7 flex flex-col items-start text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant mb-space-md shadow-sm">
-                <span className="w-2.5 h-2.5 rounded-full bg-primary-container animate-pulse" />
-                <span className="text-label-sm font-label-sm text-primary tracking-wide">
-                  Nepal&apos;s Direct Patronage Platform • Simple &amp; Sustainable
-                </span>
+              <div>
+                <span><br /> <br /> </span>
               </div>
 
               <h1 className="text-display-hero-mobile md:text-display-hero font-display-hero text-on-surface tracking-tight mb-space-sm">

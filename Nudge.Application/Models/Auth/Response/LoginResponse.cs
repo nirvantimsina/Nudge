@@ -1,6 +1,8 @@
+using Nudge.Domain.Models;
+
 namespace Nudge.Application.Models.Auth.Response;
 
-public class LoginResponse
+public class LoginResponse : StatusResponse
 {
     public string? Token { get; set; }
     public string? UserName { get; set; }
