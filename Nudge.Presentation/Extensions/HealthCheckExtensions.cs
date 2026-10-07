@@ -20,8 +20,8 @@ public static class HealthCheckExtensions
 
     public static IServiceCollection AddAppHealthChecks(this IServiceCollection services, IConfiguration configuration)
     {
-        var dbConnection = configuration.GetConnectionString("DefaultConnection") 
-            ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is missing.");
+        var dbConnection = configuration.GetConnectionString("Nudge_DB") 
+            ?? throw new InvalidOperationException("ConnectionStrings:Nudge_DB is missing.");
             
         var redisConnection = configuration.GetConnectionString("Redis") 
             ?? "localhost:6379,abortConnect=false";
