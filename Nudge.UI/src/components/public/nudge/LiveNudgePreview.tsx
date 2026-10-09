@@ -45,7 +45,7 @@ export function LiveNudgePreview({ onNudgeSent }: LiveNudgePreviewProps) {
   }
 
   if (isLoading) {
-    return <div className="h-150 rounded-2xl bg-surface-container-low animate-pulse" />;
+    return <div className="h-[600px] rounded-2xl bg-surface-container-low animate-pulse" />;
   }
 
   if (error || !creator) {

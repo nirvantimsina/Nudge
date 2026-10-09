@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { CustomCursor } from "../components/public/common/CustomCursor";
-import { AuthProvider } from "../features/auth/hooks/use.auth.hook";
-import { ContextMenu } from "../components/public/common/ContextMenu";
-import { ConsoleEasterEgg } from "../components/public/eastereggs/ConsoleEasterEgg";
-import { ToastContainer } from "../components/common/ToastContainer";
-import AnalyticsTracker from "../components/AnalyticsTracker";
+import { CustomCursor } from "@/src/components/public/common/CustomCursor";
+import { AuthProvider } from "@/src/context/AuthContext";
+import { ContextMenu } from "@/src/components/public/common/ContextMenu";
+import { ConsoleEasterEgg } from "@/src/components/public/eastereggs/ConsoleEasterEgg";
+import { ToastContainer } from "@/src/components/common/ToastContainer";
+import AnalyticsTracker from "@/src/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
   title: "Nudge | Nepal's Creator Patronage Platform",

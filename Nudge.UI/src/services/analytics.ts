@@ -1,3 +1,5 @@
+import { CLIENT_API_BASE_URL } from "@/lib/env";
+
 export interface AnalyticsPayload {
   eventName: string;
   url?: string;
@@ -21,7 +23,7 @@ export function sendTelemetry(payload: AnalyticsPayload, useBeacon = false) {
     metadata: payload.metadata || {}
   };
 
-  const targetUrl = 'http://localhost:5043/api/Analytics/Track';
+  const targetUrl = `${CLIENT_API_BASE_URL}/Analytics/Track`;
 
   // Use Beacon API for tab closures/navigation departures so requests aren't canceled
   if (useBeacon && navigator.sendBeacon) {

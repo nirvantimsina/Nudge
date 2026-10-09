@@ -53,6 +53,14 @@ try
     builder.Services.AddScoped<IAnalyticsRepository, SeqAnalyticsRepository>();
     builder.Services.Configure<SeqOptions>(builder.Configuration.GetSection(SeqOptions.SectionName));
 
+    // Zitadel Identity Provider Service
+    builder.Services.AddHttpClient<IZitadelService, ZitadelService>((sp, client) =>
+    {
+        var zitadelUrl = builder.Configuration["Zitadel:Issuer"] ?? "http://localhost:8080";
+        client.BaseAddress = new Uri(zitadelUrl.TrimEnd('/'));
+        client.Timeout = TimeSpan.FromSeconds(15);
+    });
+
     // Register HttpContextAccessor and the Scoped Creator Context
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ICreatorContext, CreatorContext>();

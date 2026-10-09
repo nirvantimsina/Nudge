@@ -9,3 +9,14 @@ export interface CreatorInfoDTO {
   grandfatherName: string;
   spouseName?: string | null;
 }
+
+export const INITIAL_CREATOR_INFO: CreatorInfoDTO = {
+  fullName: "",
+  dobAd: "",
+  dobBs: "",
+  gender: 1, // Default: 1 (Male)
+  grandfatherName: "",
+  fatherName: "",
+  motherName: "",
+  spouseName: "",
+};

@@ -9,22 +9,8 @@ import { KycStepContainer } from "@/src/components/kyc/KycStepContainer";
 import { useCreator } from "@/src/context/CreatorContext";
 import { kycService } from "@/src/features/kyc/services/kyc.service";
 import { creatorDocsSchema, creatorDocsProceedSchema } from "@/src/features/kyc/schemas/kyc.schemas";
-import { CreatorDocsDTO } from "@/src/features/kyc/types/creator-docs.types";
+import { CreatorDocsDTO, INITIAL_CREATOR_DOCS } from "@/src/features/kyc/types/creator-docs.types";
 import { useKycStep } from "@/src/features/kyc/hooks/useKycStep";
-
-const INITIAL_FORM_DATA: CreatorDocsDTO = {
-  citizenshipId: "",
-  citizenshipIssuedDistrict: "",
-  citizenshipIssuedDate: "",
-  nid: null,
-  passportId: null,
-  passportExpiryDate: null,
-  panNumber: null,
-  avatarPhotoUrl: "",
-  idFrontProofUrl: "",
-  idBackProofUrl: "",
-  panDocumentUrl: null,
-};
 
 export default function KycStepTwoPage() {
   const { summary, isLocked } = useCreator();
@@ -41,7 +27,7 @@ export default function KycStepTwoPage() {
         panNumber: data.panNumber?.trim() || null,
         panDocumentUrl: data.panDocumentUrl?.trim() || null,
       }),
-    initial: INITIAL_FORM_DATA,
+    initial: INITIAL_CREATOR_DOCS,
     draftSchema: creatorDocsSchema,
     proceedSchema: creatorDocsProceedSchema,
     nextRoute: "/kyc/step-3",

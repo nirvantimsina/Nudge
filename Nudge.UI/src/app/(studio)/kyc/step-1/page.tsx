@@ -4,7 +4,7 @@
 import React from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { kycService } from "@/src/features/kyc/services/kyc.service";
-import { CreatorInfoDTO } from "@/src/features/kyc/types/creator-info.types";
+import { CreatorInfoDTO, INITIAL_CREATOR_INFO } from "@/src/features/kyc/types/creator-info.types";
 import { creatorInfoSchema, creatorInfoProceedSchema } from "@/src/features/kyc/schemas/kyc.schemas";
 import { useKycStep } from "@/src/features/kyc/hooks/useKycStep";
 import { NepaliDatePicker } from "@/src/components/common/NepaliDatePicker";
@@ -12,17 +12,6 @@ import Loading from "@/src/app/loading";
 import { InputField, RadioGroup } from "@/src/components/ui";
 import { useCreator } from "@/src/context/CreatorContext";
 import { KycStepContainer } from "@/src/components/kyc/KycStepContainer";
-
-const INITIAL_FORM_DATA: CreatorInfoDTO = {
-  fullName: "",
-  dobAd: "",
-  dobBs: "",
-  gender: 1, // Default: 1 (Male)
-  grandfatherName: "",
-  fatherName: "",
-  motherName: "",
-  spouseName: "",
-};
 
 export default function KycStepOnePage() {
   const { summary, isLocked } = useCreator();
@@ -35,7 +24,7 @@ export default function KycStepOnePage() {
         ...data,
         spouseName: data.spouseName?.trim() || undefined,
       }),
-    initial: INITIAL_FORM_DATA,
+    initial: INITIAL_CREATOR_INFO,
     draftSchema: creatorInfoSchema,
     proceedSchema: creatorInfoProceedSchema,
     nextRoute: "/kyc/step-2",

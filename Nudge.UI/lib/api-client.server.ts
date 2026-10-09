@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { buildUrl, handleResponse } from "./api/envelop";
 import { SERVER_API_BASE_URL } from "@/src/lib/env";
 
-export const API_BASE_URL = "http://localhost:5043/api";
+export const API_BASE_URL = SERVER_API_BASE_URL;
 
 export const serverApiClient = {
   async get<TResponse>(endpoint: string, params?: Record<string, string | number | boolean | undefined>): Promise<TResponse> {

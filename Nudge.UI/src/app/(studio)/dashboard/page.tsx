@@ -1,9 +1,8 @@
 // src/app/(studio)/dashboard/page.tsx
 "use client";
 
-import React from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/src/features/auth/hooks/use.auth.hook";
+import { useAuth } from "@/src/features/auth/hooks/useAuth";
 
 // Modular Dashboard Components
 import { KycActionBanner } from "@/src/components/dashboard/KycActionBanner";

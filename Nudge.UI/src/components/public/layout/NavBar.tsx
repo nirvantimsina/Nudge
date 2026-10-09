@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/src/components/public/common/Button";
-import { useAuth } from "@/src/features/auth/hooks/use.auth.hook";
+import { useAuth } from "@/src/features/auth/hooks/useAuth";
 
 export interface ProductItem {
   name: string;

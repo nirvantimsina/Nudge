@@ -3,7 +3,7 @@
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/src/features/auth/hooks/use.auth.hook";
+import { useAuth } from "@/src/features/auth/hooks/useAuth";
 import { StudioSidebar } from "@/src/components/dashboard/StudioSidebar";
 import { StudioHeader } from "@/src/components/dashboard/StudioHeader";
 import { DashboardFooter } from "@/src/components/dashboard/DashboardFooter";

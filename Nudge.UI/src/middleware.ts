@@ -1,4 +1,4 @@
-// src/proxy.ts
+// src/middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -9,13 +9,14 @@ const PROTECTED_PREFIXES = [
   "/settings",
   "/creator/studio",
   "/kyc",
+  "/onboarding",
 ];
 
 const AUTH_PREFIXES = [
   "/auth",
 ];
 
-// wildcard
+// Next.js Route Matcher
 export const config = {
   matcher: [
     "/dashboard/:path*",
@@ -24,10 +25,11 @@ export const config = {
     "/creator/studio/:path*",
     "/auth/:path*",
     "/kyc/:path*",
+    "/onboarding/:path*",
   ],
 };
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   // Read backend-issued HttpOnly cookie
   const token =
     request.cookies.get("nudge_auth_token")?.value ||
@@ -52,4 +54,3 @@ export function proxy(request: NextRequest) {
 
   return NextResponse.next();
 }
-

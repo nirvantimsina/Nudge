@@ -154,15 +154,33 @@ The local stack runs on a shared Docker bridge network (`nudge-network`), exposi
 
 | Service | Container Name | Image / Base | Internal Port | Host Port | Purpose |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **PostgreSQL** | `postgres-database` | `postgres:16-alpine` | `5432` | `5444` | Persistent database storage |
+| **PostgreSQL** | `postgres-database` | `postgres:latest` | `5432` | `5444` | Persistent relational database storage |
 | **PgBouncer** | `nudge-pgbouncer` | `edoburu/pgbouncer` | `5432` | `6432` | High-throughput connection pooling |
+| **Zitadel** | `nudge-zitadel` | `ghcr.io/zitadel/zitadel` | `8080` | `8080` | Headless IAM federated identity engine |
 | **Seq** | `nudge-seq` | `datalust/seq:latest` | `5341` / `80` | `5341` | Structured centralized telemetry |
 | **API** | `nudge-backend-api` | `.NET 9 SDK` | `5043` | `5043` | Core domain & payment services |
 | **UI** | `nudge-frontend-ui` | `Node 20 Alpine` | `3000` | `3000` | Next.js 15 frontend |
 
 ---
 
-## 6. How to Run Locally
+## 6. Authentication, Onboarding & Creator Provisioning
+
+### Headless Zitadel IAM Integration
+Nudge uses **Zitadel** as its underlying identity and access management engine while retaining a **100% custom Himalayan-themed UI**:
+- **BFF Architecture**: Browser credentials submitted to custom forms (`/auth`) are handled by Next.js API routes (`/api/auth/login`, `/api/auth/signup`) and forwarded to the .NET backend.
+- **PostgreSQL User Sync**: On successful authentication or registration, the backend dispatches `SyncUserSessionCommand`, which calls PostgreSQL `permission.fn_upsert_user` to automatically sync user accounts, roles, and creator links.
+- **Secure Sessions**: Client authentication is stored in an `HttpOnly` cookie (`nudge_auth_token`), guarded by Next.js edge middleware.
+- **SSO Extensibility**: Full Google & Apple federated login support is built using Zitadel `idp_hint` (toggled via `NEXT_PUBLIC_ENABLE_SSO=true` in `.env.local`, hidden by default).
+
+### User Onboarding & Analytics (`/onboarding`)
+Upon initial signup, users are guided through an interactive onboarding workflow:
+- **Discovery Analytics**: Records where creators and supporters heard about Nudge (TikTok, YouTube, Friends, Search, etc.) into `analytics.tbluseronboarding`.
+- **Intent Segmentation**: Categorizes users based on primary goals (`creator_page`, `donate_streamers`, `exploring`).
+- **Instant Creator Account Provisioning**: If a user chooses to launch a creator page, they configure their handle (`@slug`), brand name, category, and bio. The system automatically creates a record in `creator.tblcreators` via `creator.fn_create_creator`, ensuring the creator dashboard (`/dashboard`) immediately has active profile and metric data.
+
+---
+
+## 7. How to Run Locally
 
 ### Option A: The Docker Compose Path (Recommended)
 
@@ -174,6 +192,7 @@ docker compose up --build -d
 - API Base: `http://localhost:5043/api`
 - Scalar API Explorer: `http://localhost:5043/scalar/v1`
 - Next.js UI: `http://localhost:3000`
+- Zitadel IAM Console: `http://localhost:8080/ui/console`
 - Seq Log Dashboard: `http://localhost:5341`
 
 ---

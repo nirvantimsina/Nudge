@@ -3,32 +3,14 @@
 import React from "react";
 import { Zap, Heart, MessageSquareReply } from "lucide-react";
 
-export interface NudgeFeedItem {
-  id: string;
-  senderName: string;
-  amountNpr: number;
-  message?: string;
-  paymentRail: "Fonepay" | "eSewa" | "Khalti" | "ConnectIPS" | "Stripe";
-  tierBadge?: string;
-  timestamp: string;
-}
+import { NudgeFeedItem } from "@/src/features/dashboard/types/dashboard.types";
+import { DEFAULT_NUDGES } from "@/src/features/dashboard/constants/dashboard.constants";
+
+export type { NudgeFeedItem };
 
 interface LiveNudgesFeedProps {
   items?: NudgeFeedItem[];
 }
-
-const DEFAULT_NUDGES: NudgeFeedItem[] = [
-  { id: "1", senderName: "Rohan Karki", amountNpr: 1500, message: "Love the documentary series! Keep flying the drone high!", paymentRail: "Fonepay", tierBadge: "Executive Producer", timestamp: "3m ago" },
-  { id: "2", senderName: "Pooja Thapa", amountNpr: 750, message: "Chiya khanu hajur, inspiring work for Nepali cinema!", paymentRail: "eSewa", tierBadge: "Story Patron", timestamp: "12m ago" },
-  { id: "3", senderName: "Suman from Sydney", amountNpr: 3500, message: "From diaspora with love. Watching your edits from Australia!", paymentRail: "Stripe", timestamp: "35m ago" },
-  { id: "4", senderName: "Dr. Samip Shrestha", amountNpr: 2500, message: "Support for Upper Mustang archival footage project.", paymentRail: "ConnectIPS", tierBadge: "Archival Patron", timestamp: "2h ago" },
-  { id: "5", senderName: "Anonymous Backer", amountNpr: 300, message: "Great cinematography in the Dolpo preview.", paymentRail: "Khalti", timestamp: "3h ago" },
-  { id: "6", senderName: "Aastha Sharma", amountNpr: 500, message: "Keep inspiring us!", paymentRail: "Fonepay", timestamp: "4h ago" },
-  { id: "7", senderName: "Binod Adhikari", amountNpr: 1000, message: "Tea on me bro ☕", paymentRail: "eSewa", timestamp: "5h ago" },
-  { id: "8", senderName: "Prashant Rai", amountNpr: 750, message: "Dami cha content!", paymentRail: "Khalti", timestamp: "6h ago" },
-  { id: "9", senderName: "Karma Lama", amountNpr: 2000, message: "For camera batteries & lenses.", paymentRail: "Fonepay", timestamp: "8h ago" },
-  { id: "10", senderName: "Sneha KC", amountNpr: 500, message: "Best wishes for next vlog!", paymentRail: "eSewa", timestamp: "10h ago" },
-];
 
 export function LiveNudgesFeed({ items = DEFAULT_NUDGES }: LiveNudgesFeedProps) {
   return (

@@ -108,10 +108,35 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:5043/api   # used by browser
       - INTERNAL_API_URL=http://nudge-api:5043/api      # used by server components
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - ZITADEL_ISSUER=http://localhost:8080
+      - ZITADEL_CLIENT_ID=392645870304100356
+      - NEXT_PUBLIC_ENABLE_SSO=false
     networks:
       - nudge-network
     depends_on:
       - nudge-api
+
+  nudge-zitadel:
+    image: ghcr.io/zitadel/zitadel:latest
+    container_name: nudge-zitadel
+    command: 'start-from-init --masterkey "MasterKeyNeedsToBe32CharactersLong!" --tlsMode disabled'
+    environment:
+      - ZITADEL_DATABASE_POSTGRES_HOST=postgres-db
+      - ZITADEL_DATABASE_POSTGRES_PORT=5432
+      - ZITADEL_DATABASE_POSTGRES_DATABASE=zitadel
+      - ZITADEL_DATABASE_POSTGRES_USER_USERNAME=postgres
+      - ZITADEL_DATABASE_POSTGRES_USER_PASSWORD=password
+      - ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE=disable
+      - ZITADEL_EXTERNALSECURE=false
+      - ZITADEL_EXTERNALPORT=8080
+      - ZITADEL_EXTERNALDOMAIN=localhost
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-db
+    networks:
+      - nudge-network
 
 volumes:
   nudge_postgres_data:
@@ -123,26 +148,5 @@ networks:
   nudge-network:
     name: nudge-network
     driver: bridge
-
-    nudge-zitadel:
-    image: ghcr.io/zitadel/zitadel:latest
-    container_name: nudge-zitadel
-    command: 'start-from-init --masterkey "MasterKeyNeedsToBe32CharactersLong!" --tlsMode disabled'
-    environment:
-      - ZITADEL_DATABASE_POSTGRES_HOST=postgres-database
-      - ZITADEL_DATABASE_POSTGRES_PORT=5432
-      - ZITADEL_DATABASE_POSTGRES_DATABASE=zitadel
-      - ZITADEL_DATABASE_POSTGRES_USER_USERNAME=sa
-      - ZITADEL_DATABASE_POSTGRES_USER_PASSWORD=password
-      - ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE=disable
-      - ZITADEL_EXTERNALSECURE=false
-      - ZITADEL_EXTERNALPORT=8080
-      - ZITADEL_EXTERNALDOMAIN=localhost
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres-database
-    networks:
-      - nudge-network
 
 # docker compose up -d --build

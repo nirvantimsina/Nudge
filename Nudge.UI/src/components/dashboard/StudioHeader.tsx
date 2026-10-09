@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCreator } from "@/src/context/CreatorContext";
-import { useAuth } from "@/src/features/auth/hooks/use.auth.hook";
+import { useAuth } from "@/src/features/auth/hooks/useAuth";
 import {
   ChevronRight,
   HelpCircle,

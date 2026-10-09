@@ -11,16 +11,9 @@ import {
   AlertCircle 
 } from "lucide-react";
 
-interface PayoutProgressMetricsProps {
-  grossDakshina?: number;
-  lockedBalance?: number;
-  isKycPending?: boolean;
-  diasporaEarningsAud?: number;
-  activeSubscribers?: number;
-  goalTitle?: string;
-  goalCurrent?: number;
-  goalTarget?: number;
-}
+import { PayoutProgressMetricsProps } from "@/src/features/dashboard/types/dashboard.types";
+
+export type { PayoutProgressMetricsProps };
 
 export function PayoutProgressMetrics({
   grossDakshina = 48250,

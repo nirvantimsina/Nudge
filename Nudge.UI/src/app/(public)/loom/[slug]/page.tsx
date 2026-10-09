@@ -1,59 +1,39 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { CheckCircle2, Share2, ArrowUpRight, Shield, Spline } from 'lucide-react';
-import { LoomResponse } from '@/src/features/public/loom/types/loom';
-import { LoomIcon } from '@/src/components/loom/public/LoomIcon';
-import { LoomNudgeCard } from '@/src/components/loom/public/LoomNudgeCard';
+// src/app/(public)/loom/[slug]/page.tsx
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { CheckCircle2, Share2, ArrowUpRight, Shield, Spline } from "lucide-react";
+import { loomService } from "@/src/features/loom/services/loom.service";
+import { LoomIcon } from "@/src/components/loom/public/LoomIcon";
+import { LoomNudgeCard } from "@/src/components/loom/public/LoomNudgeCard";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getLoomData(slug: string): Promise<LoomResponse | null> {
-  const baseUrl = process.env.INTERNAL_API_URL || 'http://localhost:5043/api';
-  const url = `${baseUrl}/Loom/LoomLinkData/${slug}`;
-
-  try {
-    const res = await fetch(url, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      console.error(`Fetch failed (${res.status}):`, res.statusText);
-      return null;
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching Loom profile:', error);
-    return null;
-  }
-}
-
 export default async function PublicLoomPage({ params }: PageProps) {
   const { slug } = await params;
-  const response = await getLoomData(slug);
+  const data = await loomService.getProfileBySlugServer(slug);
 
-  if (!response || response.status !== '0' || !response.data) {
+  if (!data) {
     notFound();
   }
 
-  const { data } = response;
   const sortedLinks = [...(data.linksJson || [])].sort(
     (a, b) => a.displayOrder - b.displayOrder
   );
 
   return (
-    <div className="min-h-screen bg-[#fff9ed] text-[#1e1c13] flex flex-col relative selection:bg-primary-fixed selection:text-primary">
+    <div className="min-h-screen bg-surface text-on-surface flex flex-col relative selection:bg-primary-fixed selection:text-primary">
       {/* Lokta Rice Paper Texture Overlay */}
-    <div 
-      aria-hidden="true"
-      style={{ pointerEvents: "none" }}
-      className="fixed inset-0 -z-10 pointer-events-none select-none opacity-40 mix-blend-multiply bg-[radial-gradient(#8c716a_0.75px,transparent_0.75px)] [background-size:24px_24px]" 
-    />
+      <div
+        aria-hidden="true"
+        style={{ pointerEvents: "none" }}
+        className="fixed inset-0 -z-10 pointer-events-none select-none opacity-40 mix-blend-multiply bg-[radial-gradient(#8c716a_0.75px,transparent_0.75px)] [background-size:24px_24px]"
+      />
+
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#fff9ed]/80 backdrop-blur-md border-b border-outline-variant/40">
+      <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant/40">
         <div className="max-w-4xl mx-auto px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-2.5">
             <Link className="flex items-center gap-2 group focus:outline-none" href="/">
@@ -92,7 +72,7 @@ export default async function PublicLoomPage({ params }: PageProps) {
 
           <button
             type="button"
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 text-xs font-medium text-[#1e1c13] transition-all"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 text-xs font-medium text-on-surface transition-all cursor-pointer"
           >
             <Share2 className="w-3.5 h-3.5 text-tertiary" />
             <span className="hidden sm:inline">Share</span>
@@ -103,16 +83,15 @@ export default async function PublicLoomPage({ params }: PageProps) {
       {/* Main Grid */}
       <main className="relative z-10 grow max-w-4xl mx-auto w-full px-3.5 sm:px-4 py-3 sm:py-6 md:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6 items-start">
-
           {/* Profile & Compact Nudge Strip */}
           <aside className="lg:col-span-5 flex flex-col gap-2.5 sm:gap-5">
             {/* 1. Profile Bio Card (Compact) */}
-            <div className="bg-[#ffffff] rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-outline-variant/40 shadow-xs sm:shadow-sm">
+            <div className="bg-surface-container-lowest rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-outline-variant/40 shadow-xs sm:shadow-sm">
               <div className="flex flex-row items-center gap-3 lg:flex-col lg:items-start text-left">
                 <div className="relative shrink-0">
                   <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 border-white shadow-xs sm:shadow-md ring-2 ring-primary-container/20 relative">
                     <Image
-                      src={data.avatar || '/placeholder-avatar.png'}
+                      src={data.avatar || "/placeholder-avatar.png"}
                       alt={data.name}
                       fill
                       className="object-cover"
@@ -127,7 +106,7 @@ export default async function PublicLoomPage({ params }: PageProps) {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-sm sm:text-base lg:text-xl font-bold text-[#1e1c13] truncate">
+                  <h1 className="text-sm sm:text-base lg:text-xl font-bold text-on-surface truncate">
                     {data.name}
                   </h1>
                   <p className="text-[11px] sm:text-xs font-semibold text-primary truncate">
@@ -169,16 +148,16 @@ export default async function PublicLoomPage({ params }: PageProps) {
               {sortedLinks.map((item, idx) => (
                 <Link
                   key={`${item.link}-${idx}`}
-                  href={item.link || '#'}
+                  href={item.link || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group bg-[#ffffff] hover:bg-surface-container-low/70 active:scale-[0.99] rounded-lg sm:rounded-xl p-2.5 sm:p-3.5 md:p-4 border border-outline-variant/40 hover:border-primary-container/50 shadow-xs sm:shadow-sm transition-all flex items-center justify-between"
+                  className="group bg-surface-container-lowest hover:bg-surface-container-low/70 active:scale-[0.99] rounded-lg sm:rounded-xl p-2.5 sm:p-3.5 md:p-4 border border-outline-variant/40 hover:border-primary-container/50 shadow-xs sm:shadow-sm transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg bg-surface-container-low text-primary flex items-center justify-center shrink-0 group-hover:bg-primary-container group-hover:text-white transition-colors">
                       <LoomIcon iconId={item.iconId} className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <span className="font-semibold text-xs sm:text-sm text-[#1e1c13] group-hover:text-primary truncate transition-colors">
+                    <span className="font-semibold text-xs sm:text-sm text-on-surface group-hover:text-primary truncate transition-colors">
                       {item.title || item.link}
                     </span>
                   </div>
@@ -189,7 +168,7 @@ export default async function PublicLoomPage({ params }: PageProps) {
               ))}
 
               {sortedLinks.length === 0 && (
-                <div className="p-6 sm:p-8 text-center bg-[#ffffff] rounded-xl border border-dashed border-outline-variant/60 text-xs text-on-surface-variant">
+                <div className="p-6 sm:p-8 text-center bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant/60 text-xs text-on-surface-variant">
                   No links added yet.
                 </div>
               )}
@@ -203,7 +182,7 @@ export default async function PublicLoomPage({ params }: PageProps) {
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-on-surface-variant">
           <div className="flex items-center gap-1.5">
             <span>Powered by</span>
-            <strong className="text-[#1e1c13]">Nudge Loom</strong>
+            <strong className="text-on-surface">Nudge Loom</strong>
           </div>
           <div className="flex items-center gap-1.5 text-tertiary">
             <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5" />

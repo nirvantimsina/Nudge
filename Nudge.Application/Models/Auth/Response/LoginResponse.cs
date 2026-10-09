@@ -4,6 +4,7 @@ namespace Nudge.Application.Models.Auth.Response;
 
 public class LoginResponse : StatusResponse
 {
+    public int UserId { get; set; }
     public string? Token { get; set; }
     public string? UserName { get; set; }
     public string? Name { get; set; }
@@ -11,9 +12,6 @@ public class LoginResponse : StatusResponse
     public int RoleId { get; set; }
     public List<string> Permissions { get; set; } = [];
     public List<MenuListResponseModel> MenuList { get; set; } = [];
-    public int CreatoId { get; set; }
+    public int CreatorId { get; set; }
+    public int CreatoId { get => CreatorId; set => CreatorId = value; }
 }
-
-
-
-

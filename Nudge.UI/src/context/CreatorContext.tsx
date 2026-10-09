@@ -7,6 +7,7 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { apiClient } from "@/lib/api-client";
 
 export type KycStatus = "pending" | "verified" | "rejected" | "submitted";
 
@@ -110,26 +111,12 @@ export function CreatorProvider({ children }: { children: React.ReactNode }) {
 
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await fetch("/api/Creator/Summary", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include",
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        const raw = result.data || result;
-        if (raw) {
-          setSummary(normalizeSummary(raw));
-        }
-      } else {
-        console.warn(`Failed to fetch creator summary (status: ${res.status})`);
+      const raw = await apiClient.get<any>("/Creator/Summary");
+      if (raw) {
+        setSummary(normalizeSummary(raw));
       }
     } catch (err) {
-      console.error("Error loading creator summary:", err);
+      console.warn("Could not load creator summary:", err);
     } finally {
       setIsLoading(false);
     }

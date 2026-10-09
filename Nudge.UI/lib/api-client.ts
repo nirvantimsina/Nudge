@@ -1,7 +1,8 @@
 // src/lib/api-client.ts
 import { ApiResponse } from "@/src/types/api.types";
+import { CLIENT_API_BASE_URL } from "./env";
 
-export const API_BASE_URL = "http://localhost:5043/api";
+export const API_BASE_URL = CLIENT_API_BASE_URL;
 
 export class ApiServerError extends Error {
   statusCode: string;
@@ -47,7 +48,16 @@ interface RequestOptions {
 }
 
 function buildUrl(endpoint: string, params?: RequestOptions["params"]) {
-  const url = new URL(`${API_BASE_URL}${endpoint}`);
+  let url: URL;
+  if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
+    url = new URL(endpoint);
+  } else if (endpoint.startsWith("/api/")) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    url = new URL(endpoint, origin);
+  } else {
+    url = new URL(`${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`);
+  }
+
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) url.searchParams.set(key, String(value));

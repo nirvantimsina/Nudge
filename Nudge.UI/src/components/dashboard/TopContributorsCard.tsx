@@ -3,39 +3,15 @@
 import React, { useState } from "react";
 import { Trophy, Medal, Flame } from "lucide-react";
 
-interface Contributor {
-  id: string;
-  name: string;
-  amount: number;
-  nudgeCount: number;
-  tierName?: string;
-  avatarText: string;
-}
+import { Contributor, ContributorFilter } from "@/src/features/dashboard/types/dashboard.types";
+import { MOCK_CONTRIBUTORS } from "@/src/features/dashboard/constants/dashboard.constants";
+
+export type { Contributor };
 
 export function TopContributorsCard() {
-  const [filter, setFilter] = useState<"daily" | "weekly" | "monthly">("weekly");
+  const [filter, setFilter] = useState<ContributorFilter>("weekly");
 
-  // Sample data mapped across filters
-  const contributors: Record<string, Contributor[]> = {
-    daily: [
-      { id: "1", name: "Rohan Karki", amount: 2500, nudgeCount: 3, tierName: "Producer", avatarText: "RK" },
-      { id: "2", name: "Pooja Thapa", amount: 1500, nudgeCount: 2, avatarText: "PT" },
-      { id: "3", name: "Anmol Shrestha", amount: 1000, nudgeCount: 1, avatarText: "AS" },
-    ],
-    weekly: [
-      { id: "1", name: "Dr. Samip Shrestha", amount: 7500, nudgeCount: 5, tierName: "Archival Patron", avatarText: "SS" },
-      { id: "2", name: "Suman from Sydney", amount: 6200, nudgeCount: 4, avatarText: "SY" },
-      { id: "3", name: "Rohan Karki", amount: 5000, nudgeCount: 6, tierName: "Producer", avatarText: "RK" },
-      { id: "4", name: "Pooja Thapa", amount: 3200, nudgeCount: 3, avatarText: "PT" },
-    ],
-    monthly: [
-      { id: "1", name: "Dr. Samip Shrestha", amount: 18500, nudgeCount: 12, tierName: "Archival Patron", avatarText: "SS" },
-      { id: "2", name: "Suman from Sydney", amount: 14000, nudgeCount: 8, avatarText: "SY" },
-      { id: "3", name: "Pasang Sherpa", amount: 9500, nudgeCount: 6, avatarText: "PS" },
-    ],
-  };
-
-  const list = contributors[filter] || [];
+  const list = MOCK_CONTRIBUTORS[filter] || [];
 
   return (
     <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-5 shadow-xs flex flex-col justify-between">

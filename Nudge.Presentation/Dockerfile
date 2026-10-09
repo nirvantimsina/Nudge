@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dev
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dev
 WORKDIR /src
 
 # 1. Copy solution file (if present) and project manifests to leverage layer caching

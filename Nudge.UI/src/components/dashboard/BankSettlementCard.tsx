@@ -3,11 +3,9 @@
 import React, { useState } from "react";
 import { Landmark, CheckCircle2, Zap } from "lucide-react";
 
-interface BankSettlementCardProps {
-  bankName?: string;
-  accountEnding?: string;
-  isAutoPayoutEnabled?: boolean;
-}
+import { BankSettlementCardProps } from "@/src/features/dashboard/types/dashboard.types";
+
+export type { BankSettlementCardProps };
 
 export function BankSettlementCard({
   bankName = "Nabil Bank Ltd.",

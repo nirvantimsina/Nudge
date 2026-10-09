@@ -10,54 +10,15 @@ import { FlagSelect } from "@/src/components/common/FlagSelect";
 import { ALL_DISTRICTS, getLocalBodiesByDistrict, getLocationMetadata } from "@/lib/nepalGeo";
 import { kycService } from "@/src/features/kyc/services/kyc.service";
 import { addressFormSchema, addressFormProceedSchema } from "@/src/features/kyc/schemas/kyc.schemas";
-import { CreatorAddressDTO } from "@/src/features/kyc/types/creator-address.types";
+import {
+  CreatorAddressDTO,
+  AddressFormData,
+  INITIAL_ADDRESS_FORM_DATA,
+  dtoToAddressForm,
+  addressFormToDto,
+} from "@/src/features/kyc/types/creator-address.types";
 import { useKycStep } from "@/src/features/kyc/hooks/useKycStep";
 import Loading from "@/src/app/loading";
-
-interface AddressFormData {
-  permDistrict: string;
-  permMunicipality: string;
-  permWardNo: number | "";
-  currentAddressLine: string;
-  currentDistrict: string;
-  currentWard: number | "";
-  longitude: string;
-  latitude: string;
-}
-
-const INITIAL_FORM_DATA: AddressFormData = {
-  permDistrict: "",
-  permMunicipality: "",
-  permWardNo: "",
-  currentAddressLine: "",
-  currentDistrict: "",
-  currentWard: "",
-  longitude: "85.3114",
-  latitude: "27.6841",
-};
-
-// Bridge: DTO (wire shape, nullable numbers) <-> form state (empty-string sentinel for unset)
-function dtoToForm(dto: CreatorAddressDTO): AddressFormData {
-  return {
-    ...dto,
-    permWardNo: dto.permWardNo ?? "",
-    currentWard: dto.currentWard ?? "",
-  };
-}
-
-function formToDto(form: AddressFormData): CreatorAddressDTO {
-  return {
-    ...form,
-    permDistrict: form.permDistrict.trim(),
-    permMunicipality: form.permMunicipality.trim(),
-    permWardNo: form.permWardNo === "" ? 0 : form.permWardNo,
-    currentAddressLine: form.currentAddressLine.trim(),
-    currentDistrict: form.currentDistrict.trim(),
-    currentWard: form.currentWard === "" ? 0 : form.currentWard,
-    longitude: form.longitude?.trim() || "85.3114",
-    latitude: form.latitude?.trim() || "27.6841",
-  };
-}
 
 export default function KycStepThreePage() {
   const { summary, isLocked } = useCreator();
@@ -67,10 +28,10 @@ export default function KycStepThreePage() {
   const { formData, setFormData, isLoading, isSubmitting, errorMsg, submit } = useKycStep<AddressFormData>({
     load: async () => {
       const dto = await kycService.getCreatorAddress();
-      return dto ? dtoToForm(dto) : null;
+      return dto ? dtoToAddressForm(dto) : null;
     },
-    save: (form) => kycService.saveCreatorAddress(formToDto(form)),
-    initial: INITIAL_FORM_DATA,
+    save: (form) => kycService.saveCreatorAddress(addressFormToDto(form)),
+    initial: INITIAL_ADDRESS_FORM_DATA,
     draftSchema: addressFormSchema,
     proceedSchema: addressFormProceedSchema,
     nextRoute: "/kyc/step-4",

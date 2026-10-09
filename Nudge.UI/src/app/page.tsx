@@ -12,7 +12,7 @@ import { FeatureBento } from "@/src/components/public/sections/FeatureBento";
 import { PricingComparisonTable } from "@/src/components/public/sections/PricingComparisonTable";
 import { HowItWorksSteps } from "@/src/components/public/sections/HowItWorksSteps";
 import { PagodaWatermark } from "@/src/components/public/decorative/PagodaWatermark";
-import { ProductSuiteSection } from "../components/public/sections/ProductSuitSection";
+import { ProductSuiteSection } from "@/src/components/public/sections/ProductSuiteSection";
 
 export default function HomePage() {
   return (
@@ -20,17 +20,13 @@ export default function HomePage() {
       <NavBar />
 
       <main className="flex-grow nepal-mandala-bg relative overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-surface-container-high/40 to-transparent pointer-events-none" />
+        <div className="absolute top-0 inset-x-0 h-40 bg-linear-to-b from-surface-container-high/40 to-transparent pointer-events-none" />
         <PagodaWatermark className="absolute top-0 left-0 right-0 h-96 overflow-hidden pointer-events-none opacity-[0.07] z-0" />
 
         {/* 1. Hero */}
         <section className="relative pt-space-xl md:pt-space-3xl pb-space-2xl px-space-md md:px-margin-tablet lg:px-margin-desktop max-w-7xl mx-auto z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
             <div className="lg:col-span-7 flex flex-col items-start text-left">
-              <div>
-                <span><br /> <br /> </span>
-              </div>
-
               <h1 className="text-display-hero-mobile md:text-display-hero font-display-hero text-on-surface tracking-tight mb-space-sm">
                 Fund your creative passions{" "}
               <span className="text-primary underline decoration-secondary-container decoration-4 underline-offset-8">
